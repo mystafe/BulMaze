@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
+interface ProgressProps
+  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   value?: number;
 }
 
@@ -13,15 +13,16 @@ const Progress = React.forwardRef<
 >(({ className, value = 0, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', className)}
+    className={cn(
+      'relative h-2 w-full overflow-hidden rounded-full bg-secondary',
+      className,
+    )}
     {...props}
   >
-    <ProgressPrimitive.Indicator asChild>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${value}%` }}
-        transition={{ duration: 0.5 }}
+    <ProgressPrimitive.Indicator>
+      <div
         className="h-full w-full flex-1 bg-primary"
+        style={{ width: `${value}%`, transition: 'width 0.5s' }}
       />
     </ProgressPrimitive.Indicator>
   </ProgressPrimitive.Root>

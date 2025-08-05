@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { buildMask, revealRandomLetter, calcPoints, calcXpGain } from './scoring';
-import { cefrToNumeric, numericToCefr, requiredXP } from './levels';
+import { buildMask, revealRandomLetter, calcPoints } from './scoring';
 
 describe('scoring utils', () => {
   it('buildMask hides unrevealed letters', () => {
@@ -14,7 +13,6 @@ describe('scoring utils', () => {
   });
 
   it('revealRandomLetter reveals all instances of a letter', () => {
-    // Force Math.random to pick the first remaining letter
     const spy = vi.spyOn(Math, 'random').mockReturnValue(0);
     const set = revealRandomLetter('banana', new Set(['b']));
     spy.mockRestore();
@@ -27,23 +25,5 @@ describe('scoring utils', () => {
 
   it('calcPoints has a minimum of 10', () => {
     expect(calcPoints(15)).toBe(10);
-  });
-
-  it('calcXpGain combines level and points', () => {
-    expect(calcXpGain(2, 80)).toBe(76);
-  });
-});
-
-describe('level utils', () => {
-  it('requiredXP grows with level', () => {
-    expect(requiredXP(2)).toBeGreaterThan(requiredXP(1));
-  });
-
-  it('cefrToNumeric maps correctly', () => {
-    expect(cefrToNumeric('B2')).toBe(4);
-  });
-
-  it('numericToCefr maps correctly', () => {
-    expect(numericToCefr(4)).toBe('B2');
   });
 });

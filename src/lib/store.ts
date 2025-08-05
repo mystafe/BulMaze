@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
 import { calcPoints, revealRandomLetter } from './scoring';
@@ -18,8 +18,7 @@ export interface UIActions {
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const uiStore = (set: any) => ({
+const uiStore: StateCreator<UIState & UIActions> = (set) => ({
   uiLang: 'en',
   targetLang: 'en',
   theme: 'light',
@@ -29,7 +28,9 @@ const uiStore = (set: any) => ({
 });
 
 export const useUiStore = create<UIState & UIActions>()(
-  authEnabled ? uiStore : persist(uiStore, { name: 'ui' })
+  (authEnabled ? uiStore : persist(uiStore, { name: 'ui' })) as StateCreator<
+    UIState & UIActions
+  >,
 );
 
 export interface WordItem {
@@ -93,8 +94,7 @@ export const useGameStore = create<GameState & GameActions>()(
             points: calcPoints(lettersTaken),
           };
         }),
-      makeGuess: (guess) =>
-        diacriticInsensitiveEquals(guess, get().word),
+      makeGuess: (guess) => diacriticInsensitiveEquals(guess, get().word),
       reset: () =>
         set({
           word: '',
@@ -116,8 +116,8 @@ export const useGameStore = create<GameState & GameActions>()(
         reviver: (key, value) =>
           key === 'revealed' ? new Set<string>(value as string[]) : value,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export interface CareerState {
@@ -136,7 +136,7 @@ export interface CareerActions {
   save: () => Promise<void>;
 }
 
-const careerStore = (set: any, get: any) => ({
+const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
   cefr: 'A1',
   levelNumeric: 1 as LevelNumeric,
   xp: 0,
@@ -192,8 +192,11 @@ const careerStore = (set: any, get: any) => ({
     });
   },
 });
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export const useCareerStore = create<CareerState & CareerActions>()(
-  authEnabled ? careerStore : persist(careerStore, { name: 'career' })
+  (authEnabled
+    ? careerStore
+    : persist(careerStore, { name: 'career' })) as StateCreator<
+    CareerState & CareerActions
+  >,
 );
