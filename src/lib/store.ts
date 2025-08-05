@@ -4,6 +4,8 @@ import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
 import { calcPoints, revealRandomLetter } from './scoring';
 import { diacriticInsensitiveEquals } from './utils';
 
+const authEnabled = process.env.FEATURE_AUTH === 'true';
+
 export interface UIState {
   uiLang: string;
   targetLang: string;
@@ -16,18 +18,18 @@ export interface UIActions {
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const uiStore = (set: any) => ({
+  uiLang: 'en',
+  targetLang: 'en',
+  theme: 'light',
+  setUiLang: (uiLang: string) => set({ uiLang }),
+  setTargetLang: (targetLang: string) => set({ targetLang }),
+  setTheme: (theme: 'light' | 'dark') => set({ theme }),
+});
+
 export const useUiStore = create<UIState & UIActions>()(
-  persist(
-    (set) => ({
-      uiLang: 'en',
-      targetLang: 'en',
-      theme: 'light',
-      setUiLang: (uiLang) => set({ uiLang }),
-      setTargetLang: (targetLang) => set({ targetLang }),
-      setTheme: (theme) => set({ theme }),
-    }),
-    { name: 'ui' }
-  )
+  authEnabled ? uiStore : persist(uiStore, { name: 'ui' })
 );
 
 export interface WordItem {
@@ -130,43 +132,68 @@ export interface CareerActions {
   setCEFR: (cefr: CEFR) => void;
   awardXP: (gain: number) => void;
   maybeLevelUp: () => void;
+  load: () => Promise<void>;
+  save: () => Promise<void>;
 }
 
-export const useCareerStore = create<CareerState & CareerActions>()(
-  persist(
-    (set, get) => ({
-      cefr: 'A1',
-      levelNumeric: 1,
-      xp: 0,
-      requiredXp: requiredXP(1),
-      history: [],
-      setCEFR: (cefr) => {
-        const levelNumeric = cefrToNumeric(cefr);
-        set({
-          cefr,
-          levelNumeric,
-          requiredXp: requiredXP(levelNumeric),
-        });
-      },
-      awardXP: (gain) => {
-        set((state) => ({
-          xp: state.xp + gain,
-          history: [...state.history, gain],
-        }));
-        get().maybeLevelUp();
-      },
-      maybeLevelUp: () =>
-        set((state) => {
-          let { xp, levelNumeric } = state;
-          let requiredXp = state.requiredXp;
-          while (xp >= requiredXp) {
-            xp -= requiredXp;
-            levelNumeric = (levelNumeric + 1) as LevelNumeric;
-            requiredXp = requiredXP(levelNumeric);
-          }
-          return { xp, levelNumeric, requiredXp };
-        }),
+const careerStore = (set: any, get: any) => ({
+  cefr: 'A1',
+  levelNumeric: 1 as LevelNumeric,
+  xp: 0,
+  requiredXp: requiredXP(1),
+  history: [] as number[],
+  setCEFR: (cefr: CEFR) => {
+    const levelNumeric = cefrToNumeric(cefr);
+    set({
+      cefr,
+      levelNumeric,
+      requiredXp: requiredXP(levelNumeric),
+    });
+    if (authEnabled) {
+      void get().save();
+    }
+  },
+  awardXP: (gain: number) => {
+    set((state: CareerState) => ({
+      xp: state.xp + gain,
+      history: [...state.history, gain],
+    }));
+    get().maybeLevelUp();
+    if (authEnabled) {
+      void get().save();
+    }
+  },
+  maybeLevelUp: () =>
+    set((state: CareerState) => {
+      let { xp, levelNumeric } = state;
+      let requiredXp = state.requiredXp;
+      while (xp >= requiredXp) {
+        xp -= requiredXp;
+        levelNumeric = (levelNumeric + 1) as LevelNumeric;
+        requiredXp = requiredXP(levelNumeric);
+      }
+      return { xp, levelNumeric, requiredXp };
     }),
-    { name: 'career' }
-  )
+  load: async () => {
+    if (!authEnabled) return;
+    const res = await fetch('/api/profile');
+    if (res.ok) {
+      const data: CareerState = await res.json();
+      set(data);
+    }
+  },
+  save: async () => {
+    if (!authEnabled) return;
+    const { cefr, levelNumeric, xp, requiredXp, history } = get();
+    await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cefr, levelNumeric, xp, requiredXp, history }),
+    });
+  },
+});
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export const useCareerStore = create<CareerState & CareerActions>()(
+  authEnabled ? careerStore : persist(careerStore, { name: 'career' })
 );
