@@ -1,9 +1,26 @@
-export default function WordResultCard({ word, example, translation }: { word: string; example: string; translation: string }) {
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+export interface WordResultCardProps {
+  word: string;
+  example: string;
+  translation: string;
+  onNext: () => void;
+}
+
+export default function WordResultCard({ word, example, translation, onNext }: WordResultCardProps) {
   return (
-    <div className="p-4 rounded-2xl shadow bg-white dark:bg-neutral-800">
-      <h3 className="text-lg font-bold mb-2">{word}</h3>
-      <p className="italic">{example}</p>
-      <p className="text-sm opacity-75">{translation}</p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{word}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="italic">{example}</p>
+        <p className="text-sm text-muted-foreground">{translation}</p>
+      </CardContent>
+      <CardFooter className="justify-end">
+        <Button onClick={onNext}>Next</Button>
+      </CardFooter>
+    </Card>
   );
 }

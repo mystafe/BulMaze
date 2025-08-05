@@ -1,16 +1,32 @@
 import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function ModeCards() {
   return (
-    <div className="grid md:grid-cols-2 gap-4">
-      <Link href="/career" className="p-6 rounded-2xl shadow bg-white dark:bg-neutral-800">
-        <h2 className="text-xl font-bold mb-2">Career Mode</h2>
-        <p>Progress through levels and earn XP.</p>
-      </Link>
-      <Link href="/quick" className="p-6 rounded-2xl shadow bg-white dark:bg-neutral-800">
-        <h2 className="text-xl font-bold mb-2">Quick Play</h2>
-        <p>Start a game instantly without login.</p>
-      </Link>
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Career Mode</CardTitle>
+          <CardDescription>Progress through levels and earn XP.</CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button asChild>
+            <Link href="/career">Start</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Play</CardTitle>
+          <CardDescription>Start a game instantly without login.</CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button asChild variant="secondary">
+            <Link href="/quick">Play</Link>
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
