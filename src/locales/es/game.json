@@ -1,0 +1,8 @@
+{
+  "loading": "Cargando...",
+  "hint": "Pista",
+  "letter": "Letra",
+  "guessPlaceholder": "Tu respuesta",
+  "guess": "Adivinar",
+  "points": "Puntos"
+}

@@ -1,0 +1,12 @@
+{
+  "placement": {
+    "title": "Einstufungstest",
+    "desc": "Starte den Test, um dein Niveau zu entdecken.",
+    "start": "Test starten"
+  },
+  "loading": "Lädt...",
+  "question": "Frage",
+  "answerPlaceholder": "Deine Antwort",
+  "submit": "Absenden",
+  "next": "Weiter"
+}

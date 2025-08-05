@@ -1,0 +1,12 @@
+{
+  "placement": {
+    "title": "Test di Posizionamento",
+    "desc": "Inizia il test per scoprire il tuo livello.",
+    "start": "Inizia Test"
+  },
+  "loading": "Caricamento...",
+  "question": "Domanda",
+  "answerPlaceholder": "La tua risposta",
+  "submit": "Invia",
+  "next": "Avanti"
+}
