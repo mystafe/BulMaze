@@ -1,13 +1,15 @@
-'use client';
-import LevelProgress from '@/components/LevelProgress';
-import { useCareerStore } from '@/lib/store';
-
 export default function ProfilePage() {
-  const { levelNumeric } = useCareerStore();
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Level {levelNumeric}</h2>
-      <LevelProgress />
+      <h2 className="text-2xl font-bold">Profile</h2>
+      <p>Games Played: 0</p>
+      <p>Total XP: 0</p>
+      <div>
+        <h3 className="text-xl font-semibold">Last 10 Games</h3>
+        <ul className="list-disc pl-6 text-sm">
+          <li>No games played yet</li>
+        </ul>
+      </div>
     </div>
   );
 }

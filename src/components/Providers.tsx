@@ -9,10 +9,15 @@ import { SessionProvider } from 'next-auth/react';
 
 export default function Providers({ children }: { children: ReactNode }) {
   const uiLang = useUiStore((s) => s.uiLang);
+  const theme = useUiStore((s) => s.theme);
 
   useEffect(() => {
     i18n.changeLanguage(uiLang);
   }, [uiLang]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 
   if (process.env.FEATURE_AUTH === 'true') {
     return (
