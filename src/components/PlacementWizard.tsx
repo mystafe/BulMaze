@@ -1,40 +1,81 @@
 'use client';
+
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
+import { useUiStore, useCareerStore } from '@/lib/store';
+import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
 
-interface MCQ {
-  id: number;
-  type: 'mcq';
-  prompt: string;
-  options: string[];
+interface Question {
+  question: string;
+  options?: string[];
   answer: string;
 }
-interface Fill {
-  id: number;
-  type: 'fill';
-  prompt: string;
-  answer: string;
-}
-type Question = MCQ | Fill;
-
-const questions: Question[] = [
-  { id: 1, type: 'mcq', prompt: 'Select the correct article for "apple"', options: ['a', 'an', 'the', 'no article'], answer: 'an' },
-  { id: 2, type: 'mcq', prompt: 'Past tense of "go"', options: ['goed', 'went', 'gone', 'goes'], answer: 'went' },
-  { id: 3, type: 'mcq', prompt: 'Which is a noun?', options: ['quick', 'run', 'happiness', 'blue'], answer: 'happiness' },
-  { id: 4, type: 'mcq', prompt: 'Synonym of "small"', options: ['tiny', 'huge', 'long', 'wide'], answer: 'tiny' },
-  { id: 5, type: 'mcq', prompt: 'Opposite of "hot"', options: ['warm', 'cold', 'boiling', 'melted'], answer: 'cold' },
-  { id: 6, type: 'fill', prompt: 'Translate to English: "bonjour"', answer: 'hello' },
-  { id: 7, type: 'fill', prompt: 'Fill in: She ___ to school.', answer: 'goes' },
-  { id: 8, type: 'fill', prompt: 'What is 5 + 7?', answer: '12' },
-  { id: 9, type: 'fill', prompt: 'Spell the word meaning opposite of "yes"', answer: 'no' },
-  { id: 10, type: 'fill', prompt: 'Type the color of the clear sky', answer: 'blue' },
-];
 
 export default function PlacementWizard() {
+  const uiLang = useUiStore((s) => s.uiLang);
+  const setCEFR = useCareerStore((s) => s.setCEFR);
+  const router = useRouter();
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<string[]>([]);
   const [step, setStep] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
+  const [loading, setLoading] = useState(false);
+
+  const start = async () => {
+    setLoading(true);
+    const res = await fetch('/api/ai/placement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uiLang }),
+    });
+    if (res.ok) {
+      const data: Question[] = await res.json();
+      const items = data.slice(0, 10);
+      setQuestions(items);
+      setAnswers(Array(items.length).fill(''));
+      setStep(0);
+    }
+    setLoading(false);
+  };
+
+  const submit = async () => {
+    const payload = questions.map((q, i) => ({
+      question: q.question,
+      answer: answers[i],
+      correct: answers[i].trim().toLowerCase() === q.answer.toLowerCase(),
+    }));
+    const res = await fetch('/api/ai/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers: payload }),
+    });
+    if (res.ok) {
+      const { cefr } = await res.json();
+      const levelNumeric = cefrToNumeric(cefr as CEFR);
+      setCEFR(cefr);
+      useCareerStore.setState({
+        levelNumeric,
+        requiredXp: requiredXP(levelNumeric),
+      });
+      const first = !localStorage.getItem('placementDone');
+      if (first) {
+        localStorage.setItem('placementDone', '1');
+        router.push('/career?celebrate=1#dashboard');
+      } else {
+        router.push('/career#dashboard');
+      }
+    }
+  };
 
   if (step === null) {
     return (
@@ -44,33 +85,8 @@ export default function PlacementWizard() {
           <CardDescription>Start the test to discover your level.</CardDescription>
         </CardHeader>
         <CardFooter className="justify-end">
-          <Button onClick={() => setStep(0)}>Start Test</Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
-  if (step >= questions.length) {
-    const score = questions.reduce(
-      (acc, q, i) => acc + (answers[i].trim().toLowerCase() === q.answer.toLowerCase() ? 1 : 0),
-      0
-    );
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Result</CardTitle>
-          <CardDescription>
-            You scored {score} out of {questions.length}
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-end">
-          <Button
-            onClick={() => {
-              setStep(null);
-              setAnswers(Array(questions.length).fill(''));
-            }}
-          >
-            Restart
+          <Button onClick={start} disabled={loading}>
+            {loading ? 'Loading…' : 'Start Test'}
           </Button>
         </CardFooter>
       </Card>
@@ -84,16 +100,19 @@ export default function PlacementWizard() {
       copy[step] = val;
       return copy;
     });
-  const next = () => setStep(step + 1);
+  const next = () => {
+    if (step === questions.length - 1) submit();
+    else setStep(step + 1);
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Question {step + 1}</CardTitle>
-        <CardDescription>{q.prompt}</CardDescription>
+        <CardDescription>{q.question}</CardDescription>
       </CardHeader>
       <CardContent>
-        {q.type === 'mcq' ? (
+        {q.options ? (
           <div className="grid gap-2">
             {q.options.map((opt) => (
               <Button
@@ -122,3 +141,4 @@ export default function PlacementWizard() {
     </Card>
   );
 }
+
