@@ -7,7 +7,9 @@ import LevelProgress from './LevelProgress';
 import WordResultCard from './WordResultCard';
 import { useGameStore, useCareerStore, useUiStore } from '@/lib/store';
 import { buildMask, calcXpGain } from '@/lib/scoring';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+
+const MotionInput = motion(Input);
 
 export default function GameBoard() {
   const [guess, setGuess] = useState('');
@@ -60,7 +62,6 @@ export default function GameBoard() {
       setShowResult(true);
     } else {
       setShake(true);
-      setTimeout(() => setShake(false), 300);
     }
     setGuess('');
   };
@@ -85,37 +86,41 @@ export default function GameBoard() {
     );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <LevelProgress />
       <p className="text-lg">{t('hint')}: {hint}</p>
       <p className="text-2xl tracking-widest">{mask}</p>
       <div className="flex gap-2">
-        <Button variant="secondary" onClick={takeLetter}>
+        <Button
+          variant="secondary"
+          onClick={takeLetter}
+          aria-label={t('letter')}
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+        >
           {t('letter')}
         </Button>
-        <Input
-          className={cn(shake && 'shake')}
+        <MotionInput
+          className="focus:outline-none focus:ring-2 focus:ring-primary"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
           placeholder={t('guessPlaceholder')}
           aria-label={t('guess')}
+          animate={shake ? { x: [-5, 5, -5, 5, 0] } : { x: 0 }}
+          transition={{ duration: 0.4 }}
+          onAnimationComplete={() => setShake(false)}
         />
-        <Button onClick={handleGuess}>{t('guess')}</Button>
+        <Button
+          onClick={handleGuess}
+          aria-label={t('guess')}
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+        >
+          {t('guess')}
+        </Button>
       </div>
       <p>
         {t('points')}: {points}
       </p>
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .shake {
-          animation: shake 0.3s;
-        }
-      `}</style>
     </div>
   );
 }
