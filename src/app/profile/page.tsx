@@ -1,3 +1,4 @@
+'use client';
 import LevelProgress from '@/components/LevelProgress';
 import { useCareerStore } from '@/lib/store';
 

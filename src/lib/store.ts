@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { requiredXp } from './levels';
 
 export interface GameState {
@@ -10,13 +10,26 @@ export interface GameState {
   points: number;
 }
 
-export const useGameStore = create<GameState>(() => ({
-  currentWord: '',
-  hint: '',
-  revealed: new Set(),
-  lettersTaken: 0,
-  points: 100,
-}));
+export const useGameStore = create<GameState>()(
+  persist(
+    (): GameState => ({
+      currentWord: '',
+      hint: '',
+      revealed: new Set(),
+      lettersTaken: 0,
+      points: 100,
+    }),
+    {
+      name: 'game',
+      storage: createJSONStorage(() => localStorage, {
+        replacer: (_key, value) =>
+          value instanceof Set ? Array.from(value) : value,
+        reviver: (key, value) =>
+          key === 'revealed' ? new Set<string>(value as string[]) : value,
+      }),
+    }
+  )
+);
 
 export interface CareerState {
   level: number;
@@ -48,8 +61,13 @@ export interface UiState {
   theme: 'light' | 'dark';
 }
 
-export const useUiStore = create<UiState>(() => ({
-  uiLang: 'en',
-  targetLang: 'en',
-  theme: 'light',
-}));
+export const useUiStore = create<UiState>()(
+  persist(
+    (): UiState => ({
+      uiLang: 'en',
+      targetLang: 'en',
+      theme: 'light',
+    }),
+    { name: 'ui' }
+  )
+);
