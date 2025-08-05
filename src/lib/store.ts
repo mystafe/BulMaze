@@ -15,7 +15,7 @@ export interface UIActions {
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
-export const useUIStore = create<UIState & UIActions>()(
+export const useUiStore = create<UIState & UIActions>()(
   persist(
     (set) => ({
       uiLang: 'en',

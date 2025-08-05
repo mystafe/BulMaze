@@ -1,5 +1,4 @@
 'use client';
-import LanguageSelector from './LanguageSelector';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 
@@ -10,7 +9,12 @@ export default function Header() {
       <Link href="/" className="text-2xl font-bold">
         {t('title')}
       </Link>
-      <LanguageSelector />
+      <nav className="flex gap-4">
+        <Link href="/quick">Quick</Link>
+        <Link href="/career">Career</Link>
+        <Link href="/profile">Profile</Link>
+        <Link href="/settings">Settings</Link>
+      </nav>
     </header>
   );
 }
