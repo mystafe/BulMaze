@@ -6,10 +6,14 @@ export function buildMask(word: string, revealed: Set<string>): string {
 }
 
 export function revealRandomLetter(word: string, revealed: Set<string>): Set<string> {
-  const remaining = word
-    .toLowerCase()
-    .split('')
-    .filter((ch) => !revealed.has(ch));
+  const remaining = Array.from(
+    new Set(
+      word
+        .toLowerCase()
+        .split('')
+        .filter((ch) => !revealed.has(ch))
+    )
+  );
   if (remaining.length === 0) return revealed;
   const random = remaining[Math.floor(Math.random() * remaining.length)];
   const updated = new Set(revealed);
