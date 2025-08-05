@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import {
+  Lang,
   WordItemSchema,
   PlacementTestSchema,
   PlacementResultSchema,
@@ -12,29 +13,48 @@ export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function generateWordItem(args: {
   cefr: string;
-  targetLang: string;
-  uiLang: string;
-}): Promise<WordItem> {
+  targetLang: Lang;
+  uiLang: Lang;
+}): Promise<WordItem | null> {
   const { cefr, targetLang, uiLang } = args;
-  const system = `You are a language learning content generator.\nOutput concise JSON only.\nRespect CEFR level: ${cefr} and target language: ${targetLang}.`;
-  const user = `Generate a single word guessing item.\nConstraints:\n- targetLanguage: ${targetLang}\n- learnerLevel: ${cefr}\n- partOfSpeech: noun or adjective or verb (balance variety)\n- Provide a short, clear hint in ${uiLang}.\n- Provide 1 sentence example in ${targetLang}, simple and level-appropriate.\n- Provide a brief translation of the example into ${uiLang}.\nReturn JSON:\n{\n  "word": "...",\n  "hint": "...",\n  "example": "...",\n  "exampleTranslation": "...",\n  "pos": "noun|verb|adj",\n  "difficulty": 1-10\n}`;
-  const completion = await openai.responses.create({
-    model: 'gpt-4.1-mini',
-    input: [
-      { role: 'system', content: system },
-      { role: 'user', content: user },
-    ],
-  });
-  const data = JSON.parse(completion.output_text);
-  return WordItemSchema.parse(data);
+  const system =
+    'You are a language learning content generator. Return VALID JSON only. Respect CEFR and target language.';
+  const baseUser =
+    `CEFR level ${cefr}. Generate ONE common word with fields: word, hint (in ${uiLang}), example (in ${targetLang}), exampleTranslation (in ${uiLang}), pos (noun|verb|adj), difficulty (1-10).`;
+
+  const prompts = [
+    baseUser,
+    `${baseUser} Return ONLY valid JSON with no extra text.`,
+  ];
+
+  for (const user of prompts) {
+    try {
+      const completion = await openai.responses.create({
+        model: 'gpt-4.1-mini',
+        input: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      });
+      const data = JSON.parse(completion.output_text);
+      return WordItemSchema.parse(data);
+    } catch {
+      if (user === prompts[prompts.length - 1]) {
+        return null;
+      }
+    }
+  }
+  return null;
 }
 
 export async function generatePlacementTest(args: {
-  uiLang: string;
+  uiLang: Lang;
 }): Promise<PlacementTest> {
   const { uiLang } = args;
-  const system = 'You are a language placement test generator. Output JSON.';
-  const user = `Generate 10 short questions with answers in ${uiLang}. Include multiple-choice and fill-in-the-blank types.`;
+  const system =
+    'You are a language placement test generator. Return VALID JSON.';
+  const user =
+    `Generate 10 mixed questions (multiple-choice and fill-in) level-graded in ${uiLang}. Include correct answers. Return an array of {question, options?, answer}.`;
   const completion = await openai.responses.create({
     model: 'gpt-4.1-mini',
     input: [
@@ -46,20 +66,48 @@ export async function generatePlacementTest(args: {
   return PlacementTestSchema.parse(data);
 }
 
+function fallbackEvaluate(answers: unknown): PlacementResult {
+  let total = 0;
+  let correct = 0;
+  if (Array.isArray(answers)) {
+    total = answers.length;
+    for (const ans of answers) {
+      if (typeof ans === 'boolean') correct += ans ? 1 : 0;
+      else if (typeof ans === 'object' && ans && 'correct' in ans) {
+        correct += (Boolean((ans as { correct: unknown }).correct)) ? 1 : 0;
+      }
+    }
+  }
+  const ratio = total ? correct / total : 0;
+  let cefr: PlacementResult['cefr'] = 'A1';
+  if (ratio > 0.9) cefr = 'C2';
+  else if (ratio > 0.8) cefr = 'C1';
+  else if (ratio > 0.7) cefr = 'B2';
+  else if (ratio > 0.6) cefr = 'B1';
+  else if (ratio > 0.4) cefr = 'A2';
+  return { cefr };
+}
+
 export async function evaluatePlacementAnswers(args: {
   answers: unknown;
 }): Promise<PlacementResult> {
   const { answers } = args;
-  const system = 'You evaluate placement tests and return CEFR level as A1..C2.';
-  const completion = await openai.responses.create({
-    model: 'gpt-4.1-mini',
-    input: [
-      { role: 'system', content: system },
-      { role: 'user', content: JSON.stringify(answers) },
-    ],
-  });
-  const data = { cefr: completion.output_text.trim() };
-  return PlacementResultSchema.parse(data);
+  const system =
+    'You evaluate placement tests and return JSON { "cefr": "A1|A2|B1|B2|C1|C2" } only.';
+  const user = `Answers: ${JSON.stringify(answers)}`;
+  try {
+    const completion = await openai.responses.create({
+      model: 'gpt-4.1-mini',
+      input: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    });
+    const data = JSON.parse(completion.output_text);
+    return PlacementResultSchema.parse(data);
+  } catch {
+    return fallbackEvaluate(answers);
+  }
 }
 
 export default openai;
