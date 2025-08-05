@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
 import { calcPoints, revealRandomLetter } from './scoring';
+import { diacriticInsensitiveEquals } from './utils';
 
 export interface UIState {
   uiLang: string;
@@ -91,7 +92,7 @@ export const useGameStore = create<GameState & GameActions>()(
           };
         }),
       makeGuess: (guess) =>
-        guess.trim().toLowerCase() === get().word.toLowerCase(),
+        diacriticInsensitiveEquals(guess, get().word),
       reset: () =>
         set({
           word: '',
