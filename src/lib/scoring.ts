@@ -27,7 +27,9 @@ export function revealRandomLetter(word: string, revealed: Set<string>): Set<str
 }
 
 export function calcPoints(lettersTaken: number): number {
-  const points = 100 - lettersTaken * 10;
-  return points < 10 ? 10 : Math.round(points);
+  return Math.max(10, 100 - lettersTaken * 10);
 }
 
+export function calcXpGain(levelNumeric: number, remainingPoints: number): number {
+  return 50 + levelNumeric * 5 + Math.floor(remainingPoints / 5);
+}

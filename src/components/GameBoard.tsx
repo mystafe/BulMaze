@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useGameStore, useCareerStore } from '@/lib/store';
-import { buildMask, revealRandomLetter, calcPoints } from '@/lib/scoring';
-import { calcXpGain } from '@/lib/levels';
+import { buildMask, revealRandomLetter, calcPoints, calcXpGain } from '@/lib/scoring';
 
 export default function GameBoard({ word, hint }: { word: string; hint: string }) {
   const [input, setInput] = useState('');
   const { revealed, points } = useGameStore();
-  const addXp = useCareerStore((s) => s.addXp);
+  const awardXP = useCareerStore((s) => s.awardXP);
+  const level = useCareerStore.getState().levelNumeric;
 
   const mask = buildMask(word, revealed);
 
@@ -21,8 +21,8 @@ export default function GameBoard({ word, hint }: { word: string; hint: string }
 
   const guess = () => {
     if (input.toLowerCase() === word.toLowerCase()) {
-      const xp = calcXpGain(useCareerStore.getState().level, points);
-      addXp(xp);
+      const xp = calcXpGain(level, points);
+      awardXP(xp);
       alert(`Correct! +${xp} XP`);
     } else {
       alert('Try again');

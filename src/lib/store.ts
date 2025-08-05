@@ -1,23 +1,109 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { requiredXp } from './levels';
+import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
+import { calcPoints, revealRandomLetter } from './scoring';
+
+export interface UIState {
+  uiLang: string;
+  targetLang: string;
+  theme: 'light' | 'dark';
+}
+
+export interface UIActions {
+  setUiLang: (lang: string) => void;
+  setTargetLang: (lang: string) => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+}
+
+export const useUIStore = create<UIState & UIActions>()(
+  persist(
+    (set) => ({
+      uiLang: 'en',
+      targetLang: 'en',
+      theme: 'light',
+      setUiLang: (uiLang) => set({ uiLang }),
+      setTargetLang: (targetLang) => set({ targetLang }),
+      setTheme: (theme) => set({ theme }),
+    }),
+    { name: 'ui' }
+  )
+);
+
+export interface WordItem {
+  word: string;
+  hint: string;
+  example: string;
+  exampleTranslation: string;
+  pos: string;
+  difficulty: string;
+}
 
 export interface GameState {
-  currentWord: string;
+  word: string;
   hint: string;
+  example: string;
+  exampleTranslation: string;
+  pos: string;
+  difficulty: string;
   revealed: Set<string>;
   lettersTaken: number;
   points: number;
 }
 
-export const useGameStore = create<GameState>()(
+export interface GameActions {
+  setWordItem: (item: WordItem) => void;
+  takeLetter: () => void;
+  makeGuess: (guess: string) => boolean;
+  reset: () => void;
+}
+
+export const useGameStore = create<GameState & GameActions>()(
   persist(
-    (): GameState => ({
-      currentWord: '',
+    (set, get) => ({
+      word: '',
       hint: '',
-      revealed: new Set(),
+      example: '',
+      exampleTranslation: '',
+      pos: '',
+      difficulty: '',
+      revealed: new Set<string>(),
       lettersTaken: 0,
       points: 100,
+      setWordItem: (item) =>
+        set({
+          word: item.word,
+          hint: item.hint,
+          example: item.example,
+          exampleTranslation: item.exampleTranslation,
+          pos: item.pos,
+          difficulty: item.difficulty,
+          revealed: new Set<string>(),
+          lettersTaken: 0,
+          points: 100,
+        }),
+      takeLetter: () =>
+        set((state) => {
+          const lettersTaken = state.lettersTaken + 1;
+          return {
+            revealed: revealRandomLetter(state.word, state.revealed),
+            lettersTaken,
+            points: calcPoints(lettersTaken),
+          };
+        }),
+      makeGuess: (guess) =>
+        guess.trim().toLowerCase() === get().word.toLowerCase(),
+      reset: () =>
+        set({
+          word: '',
+          hint: '',
+          example: '',
+          exampleTranslation: '',
+          pos: '',
+          difficulty: '',
+          revealed: new Set<string>(),
+          lettersTaken: 0,
+          points: 100,
+        }),
     }),
     {
       name: 'game',
@@ -32,42 +118,54 @@ export const useGameStore = create<GameState>()(
 );
 
 export interface CareerState {
-  level: number;
+  cefr: CEFR;
+  levelNumeric: LevelNumeric;
   xp: number;
+  requiredXp: number;
+  history: number[];
 }
 
-export const useCareerStore = create<CareerState & { addXp: (gain: number) => void }>()(
+export interface CareerActions {
+  setCEFR: (cefr: CEFR) => void;
+  awardXP: (gain: number) => void;
+  maybeLevelUp: () => void;
+}
+
+export const useCareerStore = create<CareerState & CareerActions>()(
   persist(
     (set, get) => ({
-      level: 1,
+      cefr: 'A1',
+      levelNumeric: 1,
       xp: 0,
-      addXp: (gain) => {
-        let { level, xp } = get();
-        xp += gain;
-        while (xp >= requiredXp(level)) {
-          xp -= requiredXp(level);
-          level += 1;
-        }
-        set({ level, xp });
+      requiredXp: requiredXP(1),
+      history: [],
+      setCEFR: (cefr) => {
+        const levelNumeric = cefrToNumeric(cefr);
+        set({
+          cefr,
+          levelNumeric,
+          requiredXp: requiredXP(levelNumeric),
+        });
       },
+      awardXP: (gain) => {
+        set((state) => ({
+          xp: state.xp + gain,
+          history: [...state.history, gain],
+        }));
+        get().maybeLevelUp();
+      },
+      maybeLevelUp: () =>
+        set((state) => {
+          let { xp, levelNumeric } = state;
+          let requiredXp = state.requiredXp;
+          while (xp >= requiredXp) {
+            xp -= requiredXp;
+            levelNumeric = (levelNumeric + 1) as LevelNumeric;
+            requiredXp = requiredXP(levelNumeric);
+          }
+          return { xp, levelNumeric, requiredXp };
+        }),
     }),
     { name: 'career' }
-  )
-);
-
-export interface UiState {
-  uiLang: string;
-  targetLang: string;
-  theme: 'light' | 'dark';
-}
-
-export const useUiStore = create<UiState>()(
-  persist(
-    (): UiState => ({
-      uiLang: 'en',
-      targetLang: 'en',
-      theme: 'light',
-    }),
-    { name: 'ui' }
   )
 );

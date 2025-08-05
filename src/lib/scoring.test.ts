@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { buildMask, revealRandomLetter, calcPoints } from './scoring';
-import { calcXpGain, requiredXp, cefrToNumeric } from './levels';
+import { buildMask, revealRandomLetter, calcPoints, calcXpGain } from './scoring';
+import { cefrToNumeric, numericToCefr, requiredXP } from './levels';
 
 describe('scoring utils', () => {
   it('buildMask hides unrevealed letters', () => {
@@ -28,18 +28,22 @@ describe('scoring utils', () => {
   it('calcPoints has a minimum of 10', () => {
     expect(calcPoints(15)).toBe(10);
   });
+
+  it('calcXpGain combines level and points', () => {
+    expect(calcXpGain(2, 80)).toBe(76);
+  });
 });
 
 describe('level utils', () => {
-  it('calcXpGain considers level and points', () => {
-    expect(calcXpGain(2, 80)).toBeGreaterThan(0);
-  });
-
-  it('requiredXp grows with level', () => {
-    expect(requiredXp(2)).toBeGreaterThan(requiredXp(1));
+  it('requiredXP grows with level', () => {
+    expect(requiredXP(2)).toBeGreaterThan(requiredXP(1));
   });
 
   it('cefrToNumeric maps correctly', () => {
     expect(cefrToNumeric('B2')).toBe(4);
+  });
+
+  it('numericToCefr maps correctly', () => {
+    expect(numericToCefr(4)).toBe('B2');
   });
 });
