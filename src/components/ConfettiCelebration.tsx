@@ -1,10 +1,16 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
 
 export default function ConfettiCelebration() {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    setMounted(true);
+    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
   }, []);
-  return null;
+
+  if (!mounted) return null;
+  return createPortal(<></>, document.body);
 }
