@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
 import initTranslations from '@/lib/i18n';
 import I18nProvider from '@/components/I18nProvider';
+import PageTransition from '@/components/PageTransition';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,9 @@ export default async function RootLayout({
         <I18nProvider locale="en" namespaces={namespaces} resources={resources}>
           <Providers>
             <Header />
-            <main className="p-4 min-h-screen">{children}</main>
+            <main className="p-4 min-h-screen">
+              <PageTransition>{children}</PageTransition>
+            </main>
             <Footer />
           </Providers>
         </I18nProvider>

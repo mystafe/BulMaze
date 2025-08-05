@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   const { t } = useTranslation('common');
@@ -10,7 +11,7 @@ export default function Header() {
       <Link href="/" className="text-2xl font-bold">
         {t('title')}
       </Link>
-      <nav className="flex gap-2">
+      <nav className="flex items-center gap-2">
         <Button asChild variant="ghost">
           <Link href="/quick">{t('nav.quick')}</Link>
         </Button>
@@ -23,6 +24,7 @@ export default function Header() {
         <Button asChild variant="ghost">
           <Link href="/settings">{t('nav.settings')}</Link>
         </Button>
+        <ThemeToggle />
       </nav>
     </header>
   );
