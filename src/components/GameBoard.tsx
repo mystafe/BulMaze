@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +7,10 @@ import LevelProgress from './LevelProgress';
 import WordResultCard from './WordResultCard';
 import { useGameStore, useCareerStore, useUiStore } from '@/lib/store';
 import { buildMask, calcXpGain } from '@/lib/scoring';
-import { motion } from 'framer-motion';
-
-const MotionInput = motion(Input);
 
 export default function GameBoard() {
   const [guess, setGuess] = useState('');
   const [showResult, setShowResult] = useState(false);
-  const [shake, setShake] = useState(false);
 
   const word = useGameStore((s) => s.word);
   const hint = useGameStore((s) => s.hint);
@@ -60,8 +56,6 @@ export default function GameBoard() {
       const xp = calcXpGain(level, points);
       awardXP(xp);
       setShowResult(true);
-    } else {
-      setShake(true);
     }
     setGuess('');
   };
@@ -88,7 +82,9 @@ export default function GameBoard() {
   return (
     <div className="space-y-6">
       <LevelProgress />
-      <p className="text-lg">{t('hint')}: {hint}</p>
+      <p className="text-lg">
+        {t('hint')}: {hint}
+      </p>
       <p className="text-2xl tracking-widest">{mask}</p>
       <div className="flex gap-2">
         <Button
@@ -99,16 +95,13 @@ export default function GameBoard() {
         >
           {t('letter')}
         </Button>
-        <MotionInput
+        <Input
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
           placeholder={t('guessPlaceholder')}
           aria-label={t('guess')}
-          animate={shake ? { x: [-5, 5, -5, 5, 0] } : { x: 0 }}
-          transition={{ duration: 0.4 }}
-          onAnimationComplete={() => setShake(false)}
         />
         <Button
           onClick={handleGuess}
@@ -124,4 +117,3 @@ export default function GameBoard() {
     </div>
   );
 }
-
