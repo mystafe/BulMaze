@@ -1,0 +1,12 @@
+{
+  "placement": {
+    "title": "Teste de Nível",
+    "desc": "Inicie o teste para descobrir seu nível.",
+    "start": "Iniciar Teste"
+  },
+  "loading": "Carregando...",
+  "question": "Pergunta",
+  "answerPlaceholder": "Sua resposta",
+  "submit": "Enviar",
+  "next": "Próximo"
+}

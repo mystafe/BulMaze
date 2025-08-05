@@ -1,3 +1,24 @@
 {
-  "title": "BulMaze"
+  "title": "BulMaze",
+  "nav": {
+    "quick": "Veloce",
+    "career": "Carriera",
+    "profile": "Profilo",
+    "settings": "Impostazioni"
+  },
+  "footer": {
+    "developed": "Sviluppato da Mustafa Evleksiz"
+  },
+  "mode": {
+    "career": {
+      "title": "Modalità Carriera",
+      "desc": "Progredisci tra i livelli e guadagna XP.",
+      "start": "Inizia"
+    },
+    "quick": {
+      "title": "Gioco Veloce",
+      "desc": "Avvia subito una partita senza login.",
+      "start": "Gioca"
+    }
+  }
 }

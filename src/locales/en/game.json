@@ -1,0 +1,8 @@
+{
+  "loading": "Loading...",
+  "hint": "Hint",
+  "letter": "Letter",
+  "guessPlaceholder": "Your guess",
+  "guess": "Guess",
+  "points": "Points"
+}

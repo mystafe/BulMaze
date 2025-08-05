@@ -1,0 +1,12 @@
+{
+  "placement": {
+    "title": "Seviye Testi",
+    "desc": "Seviyeni öğrenmek için testi başlat.",
+    "start": "Testi Başlat"
+  },
+  "loading": "Yükleniyor...",
+  "question": "Soru",
+  "answerPlaceholder": "Cevabın",
+  "submit": "Gönder",
+  "next": "İleri"
+}

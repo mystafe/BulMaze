@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LevelProgress from './LevelProgress';
@@ -69,7 +70,9 @@ export default function GameBoard() {
     fetchWord();
   };
 
-  if (!word) return <p>Loading...</p>;
+  const { t } = useTranslation('game');
+
+  if (!word) return <p>{t('loading')}</p>;
 
   if (showResult)
     return (
@@ -84,23 +87,25 @@ export default function GameBoard() {
   return (
     <div className="space-y-4">
       <LevelProgress />
-      <p className="text-lg">Hint: {hint}</p>
+      <p className="text-lg">{t('hint')}: {hint}</p>
       <p className="text-2xl tracking-widest">{mask}</p>
       <div className="flex gap-2">
         <Button variant="secondary" onClick={takeLetter}>
-          Letter
+          {t('letter')}
         </Button>
         <Input
           className={cn(shake && 'shake')}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
-          placeholder="Your guess"
-          aria-label="Guess"
+          placeholder={t('guessPlaceholder')}
+          aria-label={t('guess')}
         />
-        <Button onClick={handleGuess}>Guess</Button>
+        <Button onClick={handleGuess}>{t('guess')}</Button>
       </div>
-      <p>Points: {points}</p>
+      <p>
+        {t('points')}: {points}
+      </p>
       <style jsx>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }

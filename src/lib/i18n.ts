@@ -1,29 +1,25 @@
-import i18n from 'i18next';
+import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from '@/locales/en/common.json';
-import tr from '@/locales/tr/common.json';
-import de from '@/locales/de/common.json';
-import es from '@/locales/es/common.json';
-import it from '@/locales/it/common.json';
-import pt from '@/locales/pt/common.json';
+import resourcesToBackend from 'i18next-resources-to-backend';
+import nextI18NextConfig from '../../next-i18next.config.mjs';
 
-export const defaultNS = 'common';
-export const resources = {
-  en: { [defaultNS]: en },
-  tr: { [defaultNS]: tr },
-  de: { [defaultNS]: de },
-  es: { [defaultNS]: es },
-  it: { [defaultNS]: it },
-  pt: { [defaultNS]: pt },
-};
-
-if (!i18n.isInitialized) {
-  i18n.use(initReactI18next).init({
-    resources,
-    fallbackLng: 'en',
-    defaultNS,
+export default async function initTranslations(locale: string, namespaces: string[]) {
+  const i18n = createInstance();
+  i18n
+    .use(initReactI18next)
+    .use(
+      resourcesToBackend((lng: string, ns: string) =>
+        import(`../locales/${lng}/${ns}.json`)
+      )
+    );
+  await i18n.init({
+    ...nextI18NextConfig,
+    lng: locale,
+    ns: namespaces,
     interpolation: { escapeValue: false },
   });
+  return {
+    i18n,
+    resources: i18n.services.resourceStore.data,
+  };
 }
-
-export default i18n;

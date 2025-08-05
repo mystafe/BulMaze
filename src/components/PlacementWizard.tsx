@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import {
   Card,
   CardHeader,
@@ -25,6 +26,8 @@ export default function PlacementWizard() {
   const uiLang = useUiStore((s) => s.uiLang);
   const setCEFR = useCareerStore((s) => s.setCEFR);
   const router = useRouter();
+
+  const { t } = useTranslation('career');
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -81,12 +84,12 @@ export default function PlacementWizard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Placement Test</CardTitle>
-          <CardDescription>Start the test to discover your level.</CardDescription>
+          <CardTitle>{t('placement.title')}</CardTitle>
+          <CardDescription>{t('placement.desc')}</CardDescription>
         </CardHeader>
         <CardFooter className="justify-end">
           <Button onClick={start} disabled={loading}>
-            {loading ? 'Loading…' : 'Start Test'}
+            {loading ? t('loading') : t('placement.start')}
           </Button>
         </CardFooter>
       </Card>
@@ -108,7 +111,9 @@ export default function PlacementWizard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Question {step + 1}</CardTitle>
+        <CardTitle>
+          {t('question')} {step + 1}
+        </CardTitle>
         <CardDescription>{q.question}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -129,13 +134,13 @@ export default function PlacementWizard() {
             value={answers[step]}
             onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && answers[step] && next()}
-            placeholder="Your answer"
+            placeholder={t('answerPlaceholder')}
           />
         )}
       </CardContent>
       <CardFooter className="justify-end">
         <Button onClick={next} disabled={!answers[step]}>
-          {step === questions.length - 1 ? 'Submit' : 'Next'}
+          {step === questions.length - 1 ? t('submit') : t('next')}
         </Button>
       </CardFooter>
     </Card>

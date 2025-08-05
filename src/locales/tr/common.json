@@ -1,3 +1,24 @@
 {
-  "title": "BulMaze"
+  "title": "BulMaze",
+  "nav": {
+    "quick": "Hızlı",
+    "career": "Kariyer",
+    "profile": "Profil",
+    "settings": "Ayarlar"
+  },
+  "footer": {
+    "developed": "Mustafa Evleksiz tarafından geliştirildi"
+  },
+  "mode": {
+    "career": {
+      "title": "Kariyer Modu",
+      "desc": "Seviyeleri geç ve XP kazan.",
+      "start": "Başla"
+    },
+    "quick": {
+      "title": "Hızlı Oyun",
+      "desc": "Giriş yapmadan hemen oyun başlat.",
+      "start": "Oyna"
+    }
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "placement": {
+    "title": "Placement Test",
+    "desc": "Start the test to discover your level.",
+    "start": "Start Test"
+  },
+  "loading": "Loading...",
+  "question": "Question",
+  "answerPlaceholder": "Your answer",
+  "submit": "Submit",
+  "next": "Next"
+}
