@@ -1,28 +1,25 @@
-'use client';
 import Link from 'next/link';
-import { useTranslation } from 'next-i18next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
-  const { t } = useTranslation('common');
   return (
     <header className="flex items-center justify-between p-4 border-b">
       <Link href="/" className="text-2xl font-bold">
-        {t('title')}
+        BulMaze
       </Link>
       <nav className="flex items-center gap-2">
         <Button asChild variant="ghost">
-          <Link href="/quick">{t('nav.quick')}</Link>
+          <Link href="/quick">Quick</Link>
         </Button>
         <Button asChild variant="ghost">
-          <Link href="/career">{t('nav.career')}</Link>
+          <Link href="/career">Career</Link>
         </Button>
         <Button asChild variant="ghost">
-          <Link href="/profile">{t('nav.profile')}</Link>
+          <Link href="/profile">Profile</Link>
         </Button>
         <Button asChild variant="ghost">
-          <Link href="/settings">{t('nav.settings')}</Link>
+          <Link href="/settings">Settings</Link>
         </Button>
         <ThemeToggle />
       </nav>
