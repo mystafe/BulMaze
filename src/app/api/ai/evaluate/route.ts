@@ -5,7 +5,12 @@ import { evaluatePlacementAnswers } from '@/lib/ai';
 const BodySchema = z.object({ answers: z.any() });
 
 export async function POST(req: NextRequest) {
-  const { answers } = BodySchema.parse(await req.json());
-  const result = await evaluatePlacementAnswers({ answers });
-  return NextResponse.json(result);
+  try {
+    const { answers } = BodySchema.parse(await req.json());
+    const result = await evaluatePlacementAnswers({ answers });
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('Evaluate API error', err);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
 }

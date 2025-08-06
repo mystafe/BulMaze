@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Question {
   question: string;
@@ -33,36 +35,45 @@ export default function PlacementWizard() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [step, setStep] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const start = async () => {
     setLoading(true);
-    const res = await fetch('/api/ai/placement', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uiLang }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/ai/placement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uiLang }),
+      });
+      if (!res.ok) throw new Error('Request failed');
       const data: Question[] = await res.json();
       const items = data.slice(0, 10);
       setQuestions(items);
       setAnswers(Array(items.length).fill(''));
       setStep(0);
+    } catch {
+      toast.error('Failed to start placement', {
+        action: { label: 'Retry', onClick: start },
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const submit = async () => {
+    setSubmitting(true);
     const payload = questions.map((q, i) => ({
       question: q.question,
       answer: answers[i],
       correct: answers[i].trim().toLowerCase() === q.answer.toLowerCase(),
     }));
-    const res = await fetch('/api/ai/evaluate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: payload }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/ai/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: payload }),
+      });
+      if (!res.ok) throw new Error('Request failed');
       const { cefr } = await res.json();
       const levelNumeric = cefrToNumeric(cefr as CEFR);
       setCEFR(cefr);
@@ -77,6 +88,12 @@ export default function PlacementWizard() {
       } else {
         router.push('/career#dashboard');
       }
+    } catch {
+      toast.error('Failed to submit answers', {
+        action: { label: 'Retry', onClick: submit },
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -89,6 +106,7 @@ export default function PlacementWizard() {
         </CardHeader>
         <CardFooter className="justify-end">
           <Button onClick={start} disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? t('loading') : t('placement.start')}
           </Button>
         </CardFooter>
@@ -139,7 +157,10 @@ export default function PlacementWizard() {
         )}
       </CardContent>
       <CardFooter className="justify-end">
-        <Button onClick={next} disabled={!answers[step]}>
+        <Button onClick={next} disabled={!answers[step] || submitting}>
+          {submitting && step === questions.length - 1 && (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          )}
           {step === questions.length - 1 ? t('submit') : t('next')}
         </Button>
       </CardFooter>
