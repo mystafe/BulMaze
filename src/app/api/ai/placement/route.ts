@@ -6,11 +6,12 @@ import { LangSchema } from '@/lib/schemas';
 const BodySchema = z.object({ uiLang: LangSchema });
 
 export async function POST(req: NextRequest) {
-  const { uiLang } = BodySchema.parse(await req.json());
   try {
+    const { uiLang } = BodySchema.parse(await req.json());
     const test = await generatePlacementTest({ uiLang });
     return NextResponse.json(test);
-  } catch {
-    return NextResponse.json({ error: 'Invalid response' }, { status: 422 });
+  } catch (err) {
+    console.error('Placement API error', err);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

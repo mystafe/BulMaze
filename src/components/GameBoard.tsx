@@ -7,10 +7,13 @@ import LevelProgress from './LevelProgress';
 import WordResultCard from './WordResultCard';
 import { useGameStore, useCareerStore, useUiStore } from '@/lib/store';
 import { buildMask, calcXpGain } from '@/lib/scoring';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function GameBoard() {
   const [guess, setGuess] = useState('');
   const [showResult, setShowResult] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const word = useGameStore((s) => s.word);
   const hint = useGameStore((s) => s.hint);
@@ -30,24 +33,37 @@ export default function GameBoard() {
   const targetLang = useUiStore((s) => s.targetLang);
 
   const fetchWord = useCallback(async () => {
-    const res = await fetch('/api/ai/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        targetLang,
-        cefr,
-        uiLanguage: uiLang,
-      }),
-    });
-    if (res.ok) {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetLang,
+          cefr,
+          uiLanguage: uiLang,
+        }),
+      });
+      if (!res.ok) throw new Error('Request failed');
       const data = await res.json();
       setWordItem(data);
+    } catch {
+      toast.error('Failed to load word', {
+        action: {
+          label: 'Retry',
+          onClick: fetchWord,
+        },
+      });
+    } finally {
+      setLoading(false);
     }
   }, [targetLang, cefr, uiLang, setWordItem]);
 
   useEffect(() => {
-    fetchWord();
-  }, [fetchWord]);
+    if (!word) {
+      fetchWord();
+    }
+  }, [fetchWord, word]);
 
   const mask = buildMask(word, revealed);
 
@@ -67,7 +83,19 @@ export default function GameBoard() {
 
   const { t } = useTranslation('game');
 
-  if (!word) return <p>{t('loading')}</p>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+
+  if (!word)
+    return (
+      <div className="flex justify-center py-8">
+        <Button onClick={fetchWord}>Retry</Button>
+      </div>
+    );
 
   if (showResult)
     return (

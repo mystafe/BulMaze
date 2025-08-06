@@ -10,14 +10,19 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const body = BodySchema.parse(await req.json());
-  const item = await generateWordItem({
-    targetLang: body.targetLang,
-    cefr: body.cefr,
-    uiLang: body.uiLanguage,
-  });
-  if (!item) {
-    return NextResponse.json({ error: 'Invalid response' }, { status: 422 });
+  try {
+    const body = BodySchema.parse(await req.json());
+    const item = await generateWordItem({
+      targetLang: body.targetLang,
+      cefr: body.cefr,
+      uiLang: body.uiLanguage,
+    });
+    if (!item) {
+      return NextResponse.json({ error: 'Invalid response' }, { status: 422 });
+    }
+    return NextResponse.json(item);
+  } catch (err) {
+    console.error('Generate API error', err);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
-  return NextResponse.json(item);
 }

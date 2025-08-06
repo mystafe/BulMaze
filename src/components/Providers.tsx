@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useUiStore } from '@/lib/store';
 import { SessionProvider } from 'next-auth/react';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function Providers({ children }: { children: ReactNode }) {
   const uiLang = useUiStore((s) => s.uiLang);
@@ -28,8 +29,18 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, [setTheme]);
 
   if (process.env.FEATURE_AUTH === 'true') {
-    return <SessionProvider>{children}</SessionProvider>;
+    return (
+      <SessionProvider>
+        {children}
+        <Toaster />
+      </SessionProvider>
+    );
   }
 
-  return children;
+  return (
+    <>
+      {children}
+      <Toaster />
+    </>
+  );
 }
