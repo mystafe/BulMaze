@@ -1,17 +1,14 @@
 import { createInstance } from 'i18next';
-import { initReactI18next } from 'react-i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import nextI18NextConfig from '../../next-i18next.config.mjs';
 
 export default async function initTranslations(locale: string, namespaces: string[]) {
   const i18n = createInstance();
-  i18n
-    .use(initReactI18next)
-    .use(
-      resourcesToBackend((lng: string, ns: string) =>
-        import(`../locales/${lng}/${ns}.json`)
-      )
-    );
+  i18n.use(
+    resourcesToBackend((lng: string, ns: string) =>
+      import(`../locales/${lng}/${ns}.json`)
+    ),
+  );
   await i18n.init({
     ...nextI18NextConfig,
     lng: locale,
@@ -19,7 +16,6 @@ export default async function initTranslations(locale: string, namespaces: strin
     interpolation: { escapeValue: false },
   });
   return {
-    i18n,
     resources: i18n.services.resourceStore.data,
   };
 }

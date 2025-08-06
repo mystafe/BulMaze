@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PlacementWizard from '@/components/PlacementWizard';
 import AuthButtons from '@/components/AuthButtons';
@@ -19,9 +19,8 @@ export default function CareerPage() {
   const [showDashboard, setShowDashboard] = useState(false);
   const cefr = useCareerStore((s) => s.cefr);
 
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const celebrate = searchParams.get('celebrate') === '1';
+  const [celebrate, setCelebrate] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#dashboard') {
@@ -30,10 +29,13 @@ export default function CareerPage() {
   }, []);
 
   useEffect(() => {
-    if (celebrate) {
+    const params = new URLSearchParams(window.location.search);
+    const cel = params.get('celebrate') === '1';
+    setCelebrate(cel);
+    if (cel) {
       router.replace('/career#dashboard');
     }
-  }, [celebrate, router]);
+  }, [router]);
 
   useEffect(() => {
     if (authEnabled && session) {

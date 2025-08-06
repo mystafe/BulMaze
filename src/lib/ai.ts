@@ -9,13 +9,20 @@ import {
   type PlacementResult,
 } from './schemas';
 
-export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
+}
 
 export async function generateWordItem(args: {
   cefr: string;
   targetLang: Lang;
   uiLang: Lang;
 }): Promise<WordItem | null> {
+  const openai = getClient();
   const { cefr, targetLang, uiLang } = args;
   const system =
     'You are a language learning content generator. Return VALID JSON only. Respect CEFR and target language.';
@@ -50,6 +57,7 @@ export async function generateWordItem(args: {
 export async function generatePlacementTest(args: {
   uiLang: Lang;
 }): Promise<PlacementTest> {
+  const openai = getClient();
   const { uiLang } = args;
   const system =
     'You are a language placement test generator. Return VALID JSON.';
@@ -91,6 +99,7 @@ function fallbackEvaluate(answers: unknown): PlacementResult {
 export async function evaluatePlacementAnswers(args: {
   answers: unknown;
 }): Promise<PlacementResult> {
+  const openai = getClient();
   const { answers } = args;
   const system =
     'You evaluate placement tests and return JSON { "cefr": "A1|A2|B1|B2|C1|C2" } only.';
@@ -110,4 +119,4 @@ export async function evaluatePlacementAnswers(args: {
   }
 }
 
-export default openai;
+export { getClient as createOpenAIClient };

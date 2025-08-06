@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslation } from 'next-i18next';
 import {
   Card,
   CardHeader,
@@ -28,8 +27,6 @@ export default function PlacementWizard() {
   const uiLang = useUiStore((s) => s.uiLang);
   const setCEFR = useCareerStore((s) => s.setCEFR);
   const router = useRouter();
-
-  const { t } = useTranslation('career');
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -101,13 +98,13 @@ export default function PlacementWizard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('placement.title')}</CardTitle>
-          <CardDescription>{t('placement.desc')}</CardDescription>
+          <CardTitle>Placement Test</CardTitle>
+          <CardDescription>Start the test to discover your level.</CardDescription>
         </CardHeader>
         <CardFooter className="justify-end">
           <Button onClick={start} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? t('loading') : t('placement.start')}
+            {loading ? 'Loading...' : 'Start Test'}
           </Button>
         </CardFooter>
       </Card>
@@ -130,7 +127,7 @@ export default function PlacementWizard() {
     <Card>
       <CardHeader>
         <CardTitle>
-          {t('question')} {step + 1}
+          Question {step + 1}
         </CardTitle>
         <CardDescription>{q.question}</CardDescription>
       </CardHeader>
@@ -152,7 +149,7 @@ export default function PlacementWizard() {
             value={answers[step]}
             onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && answers[step] && next()}
-            placeholder={t('answerPlaceholder')}
+            placeholder="Your answer"
           />
         )}
       </CardContent>
@@ -161,7 +158,7 @@ export default function PlacementWizard() {
           {submitting && step === questions.length - 1 && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          {step === questions.length - 1 ? t('submit') : t('next')}
+          {step === questions.length - 1 ? 'Submit' : 'Next'}
         </Button>
       </CardFooter>
     </Card>

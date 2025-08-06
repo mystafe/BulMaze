@@ -1,6 +1,5 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'next-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LevelProgress from './LevelProgress';
@@ -81,8 +80,6 @@ export default function GameBoard() {
     fetchWord();
   };
 
-  const { t } = useTranslation('game');
-
   if (loading)
     return (
       <div className="flex justify-center py-8">
@@ -111,36 +108,36 @@ export default function GameBoard() {
     <div className="space-y-6">
       <LevelProgress />
       <p className="text-lg">
-        {t('hint')}: {hint}
+        Hint: {hint}
       </p>
       <p className="text-2xl tracking-widest">{mask}</p>
       <div className="flex gap-2">
         <Button
           variant="secondary"
           onClick={takeLetter}
-          aria-label={t('letter')}
+          aria-label="Letter"
           className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
-          {t('letter')}
+          Letter
         </Button>
         <Input
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
-          placeholder={t('guessPlaceholder')}
-          aria-label={t('guess')}
+          placeholder="Your guess"
+          aria-label="Guess"
         />
         <Button
           onClick={handleGuess}
-          aria-label={t('guess')}
+          aria-label="Guess"
           className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
-          {t('guess')}
+          Guess
         </Button>
       </div>
       <p>
-        {t('points')}: {points}
+        Points: {points}
       </p>
     </div>
   );

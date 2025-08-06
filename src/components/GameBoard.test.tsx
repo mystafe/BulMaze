@@ -4,10 +4,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import GameBoard from './GameBoard';
 import React from 'react';
 
-vi.mock('next-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 vi.mock('@/components/LevelProgress', () => ({
   default: () => <div data-testid="level-progress" />,
 }));
@@ -62,16 +58,16 @@ beforeEach(() => {
 describe('GameBoard', () => {
   it('renders mask and hint', () => {
     render(<GameBoard />);
-    expect(screen.getByText('hint: clue')).toBeDefined();
+    expect(screen.getByText('Hint: clue')).toBeDefined();
     expect(screen.getByText('t _ _ t')).toBeDefined();
   });
 
   it('awards XP on correct guess', () => {
     mockGameState.makeGuess.mockReturnValue(true);
     render(<GameBoard />);
-    const input = screen.getAllByPlaceholderText('guessPlaceholder')[0];
+    const input = screen.getAllByPlaceholderText('Your guess')[0];
     fireEvent.change(input, { target: { value: 'test' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'guess' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Guess' })[0]);
     expect(mockCareerState.awardXP).toHaveBeenCalledWith(76);
     expect(screen.getByTestId('word-result')).toBeDefined();
   });
