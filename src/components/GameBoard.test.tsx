@@ -23,8 +23,6 @@ const mockGameState = {
   exampleTranslation: 'ex t',
   revealed: new Set(['t']),
   points: 80,
-  takeLetter: vi.fn(),
-  makeGuess: vi.fn(),
   setWordItem: vi.fn(),
   reset: vi.fn(),
 };
@@ -41,9 +39,16 @@ const mockUiState = {
 };
 
 vi.mock('@/lib/store', () => ({
-  useGameStore: (selector: any) => selector(mockGameState),
+  useGameStore: Object.assign(
+    (selector: any) => selector(mockGameState),
+    { setState: vi.fn() }
+  ),
   useCareerStore: (selector: any) => selector(mockCareerState),
   useUiStore: (selector: any) => selector(mockUiState),
+}));
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn() },
 }));
 
 vi.stubGlobal(
@@ -53,7 +58,6 @@ vi.stubGlobal(
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockGameState.makeGuess.mockReturnValue(false);
 });
 
 describe('GameBoard', () => {
@@ -64,7 +68,6 @@ describe('GameBoard', () => {
   });
 
   it('awards XP on correct guess', () => {
-    mockGameState.makeGuess.mockReturnValue(true);
     render(<GameBoard />);
     const input = screen.getAllByPlaceholderText('Your guess')[0];
     fireEvent.change(input, { target: { value: 'test' } });

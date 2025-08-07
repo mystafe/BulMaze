@@ -11,8 +11,15 @@ import {
   useUiStore,
   type WordItem,
 } from '@/lib/store';
-import { buildMask, calcXpGain } from '@/lib/scoring';
+import {
+  buildMask,
+  calcXpGain,
+  revealRandomLetter,
+  diacriticInsensitiveEquals,
+  calcPoints,
+} from '@/lib/scoring';
 import { fetchJson } from '@/lib/fetchJson';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export default function GameBoard() {
@@ -27,8 +34,6 @@ export default function GameBoard() {
   const translation = useGameStore((s) => s.exampleTranslation);
   const revealed = useGameStore((s) => s.revealed);
   const points = useGameStore((s) => s.points);
-  const takeLetter = useGameStore((s) => s.takeLetter);
-  const makeGuess = useGameStore((s) => s.makeGuess);
   const setWordItem = useGameStore((s) => s.setWordItem);
   const reset = useGameStore((s) => s.reset);
 
@@ -58,6 +63,7 @@ export default function GameBoard() {
       setWordItem(data);
     } catch {
       setError(true);
+      toast.error('Failed to fetch word');
     } finally {
       setLoading(false);
     }
@@ -71,22 +77,36 @@ export default function GameBoard() {
 
   const mask = useMemo(() => buildMask(word, revealed), [word, revealed]);
 
+  const handleLetter = () => {
+    useGameStore.setState((state) => {
+      const lettersTaken = state.lettersTaken + 1;
+      const newRevealed = revealRandomLetter(state.word, state.revealed);
+      return {
+        revealed: newRevealed,
+        lettersTaken,
+        points: calcPoints(lettersTaken),
+      };
+    });
+  };
+
   const handleGuess = () => {
-    if (makeGuess(guess)) {
+    if (diacriticInsensitiveEquals(guess, word)) {
       const xp = calcXpGain(level, points);
       const leveledUp = awardXP(xp);
       window.dispatchEvent(
         new CustomEvent('bulmaze:win', { detail: { leveledUp, xp } }),
       );
       setShowResult(true);
+    } else {
+      toast.error('Incorrect guess');
     }
     setGuess('');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setShowResult(false);
     reset();
-    void fetchWord();
+    await fetchWord();
   };
 
   if (loading)
@@ -120,7 +140,7 @@ export default function GameBoard() {
       <div className="flex gap-2">
         <Button
           variant="secondary"
-          onClick={takeLetter}
+          onClick={handleLetter}
           aria-label="Letter"
           disabled={loading}
           className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
