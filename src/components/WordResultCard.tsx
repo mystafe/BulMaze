@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export interface WordResultCardProps {
   word: string;
@@ -10,8 +11,14 @@ export interface WordResultCardProps {
 }
 
 export default function WordResultCard({ word, example, translation, onNext, loading }: WordResultCardProps) {
+  const MotionCard = motion(Card);
   return (
-    <Card className="rounded-2xl shadow-md">
+    <MotionCard
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
+      className="rounded-2xl shadow-md"
+    >
       <CardHeader>
         <CardTitle>{word}</CardTitle>
       </CardHeader>
@@ -24,6 +31,6 @@ export default function WordResultCard({ word, example, translation, onNext, loa
           Next
         </Button>
       </CardFooter>
-    </Card>
+    </MotionCard>
   );
 }
