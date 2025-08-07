@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
 import { fetchJson } from '@/lib/fetchJson';
+import { motion } from 'framer-motion';
 
 interface Question {
   id: string;
@@ -106,40 +107,58 @@ export default function PlacementWizard() {
   };
 
   if (phase === 'intro') {
+    const MotionCard = motion(Card);
     return (
-      <Card>
+      <MotionCard
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        className="rounded-2xl shadow-md"
+      >
         <CardHeader>
           <CardTitle>Placement Test</CardTitle>
           <CardDescription>Start the test to discover your level.</CardDescription>
         </CardHeader>
         <CardFooter className="justify-end">
-          <Button onClick={start} disabled={loading}>
+          <Button onClick={start} disabled={loading} className="rounded-2xl shadow-sm">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? 'Loading...' : 'Begin test'}
           </Button>
         </CardFooter>
-      </Card>
+      </MotionCard>
     );
   }
 
   if (phase === 'result') {
+    const MotionCard = motion(Card);
     return (
-      <Card>
+      <MotionCard
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        className="rounded-2xl shadow-md"
+      >
         <CardHeader>
           <CardTitle>Evaluating...</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
           <Loader2 className="h-6 w-6 animate-spin" />
         </CardContent>
-      </Card>
+      </MotionCard>
     );
   }
 
   const q = items[index];
   const currentAnswer = answers[q.id] || '';
 
+  const MotionCard = motion(Card);
   return (
-    <Card>
+    <MotionCard
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
+      className="rounded-2xl shadow-md"
+    >
       <CardHeader>
         <CardTitle>Question {index + 1}</CardTitle>
         <CardDescription>{q.prompt}</CardDescription>
@@ -152,6 +171,7 @@ export default function PlacementWizard() {
                 key={opt}
                 variant={currentAnswer === opt ? 'default' : 'outline'}
                 onClick={() => recordAnswer(opt)}
+                className="rounded-2xl shadow-sm"
               >
                 {opt}
               </Button>
@@ -159,6 +179,7 @@ export default function PlacementWizard() {
           </div>
         ) : (
           <Input
+            className="rounded-2xl shadow-sm"
             value={currentAnswer}
             onChange={(e) => recordAnswer(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && currentAnswer && next()}
@@ -167,14 +188,18 @@ export default function PlacementWizard() {
         )}
       </CardContent>
       <CardFooter className="justify-end">
-        <Button onClick={next} disabled={!currentAnswer || submitting}>
+        <Button
+          onClick={next}
+          disabled={!currentAnswer || submitting}
+          className="rounded-2xl shadow-sm"
+        >
           {submitting && index === items.length - 1 && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           {index === items.length - 1 ? 'Submit' : 'Next'}
         </Button>
       </CardFooter>
-    </Card>
+    </MotionCard>
   );
 }
 
