@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { fetchJson } from '@/lib/fetchJson';
 
 interface Question {
   question: string;
@@ -37,21 +37,20 @@ export default function PlacementWizard() {
   const start = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/ai/placement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uiLang }),
-      });
-      if (!res.ok) throw new Error('Request failed');
-      const data: Question[] = await res.json();
+      const data = await fetchJson<Question[]>(
+        '/api/ai/placement',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uiLang }),
+        },
+      );
       const items = data.slice(0, 10);
       setQuestions(items);
       setAnswers(Array(items.length).fill(''));
       setStep(0);
     } catch {
-      toast.error('Failed to start placement', {
-        action: { label: 'Retry', onClick: start },
-      });
+      // error handled in fetchJson
     } finally {
       setLoading(false);
     }
@@ -65,13 +64,14 @@ export default function PlacementWizard() {
       correct: answers[i].trim().toLowerCase() === q.answer.toLowerCase(),
     }));
     try {
-      const res = await fetch('/api/ai/evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: payload }),
-      });
-      if (!res.ok) throw new Error('Request failed');
-      const { cefr } = await res.json();
+      const { cefr } = await fetchJson<{ cefr: CEFR }>(
+        '/api/ai/evaluate',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers: payload }),
+        },
+      );
       const levelNumeric = cefrToNumeric(cefr as CEFR);
       setCEFR(cefr);
       useCareerStore.setState({
@@ -86,9 +86,7 @@ export default function PlacementWizard() {
         router.push('/career#dashboard');
       }
     } catch {
-      toast.error('Failed to submit answers', {
-        action: { label: 'Retry', onClick: submit },
-      });
+      // error handled in fetchJson
     } finally {
       setSubmitting(false);
     }

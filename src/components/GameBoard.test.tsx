@@ -47,7 +47,7 @@ vi.mock('@/lib/store', () => ({
 
 vi.stubGlobal(
   'fetch',
-  vi.fn(() => Promise.resolve({ ok: false })),
+  vi.fn(() => Promise.resolve({ ok: false, json: () => Promise.resolve({}) })),
 );
 
 beforeEach(() => {

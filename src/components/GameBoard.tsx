@@ -4,15 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LevelProgress from './LevelProgress';
 import WordResultCard from './WordResultCard';
-import { useGameStore, useCareerStore, useUiStore } from '@/lib/store';
+import ErrorState from './ErrorState';
+import {
+  useGameStore,
+  useCareerStore,
+  useUiStore,
+  type WordItem,
+} from '@/lib/store';
 import { buildMask, calcXpGain } from '@/lib/scoring';
+import { fetchJson } from '@/lib/fetchJson';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function GameBoard() {
   const [guess, setGuess] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const word = useGameStore((s) => s.word);
   const hint = useGameStore((s) => s.hint);
@@ -33,26 +40,23 @@ export default function GameBoard() {
 
   const fetchWord = useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
-      const res = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetLang,
-          cefr,
-          uiLanguage: uiLang,
-        }),
-      });
-      if (!res.ok) throw new Error('Request failed');
-      const data = await res.json();
+      const data = await fetchJson<WordItem>(
+        '/api/ai/generate',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetLang,
+            cefr,
+            uiLanguage: uiLang,
+          }),
+        },
+      );
       setWordItem(data);
     } catch {
-      toast.error('Failed to load word', {
-        action: {
-          label: 'Retry',
-          onClick: fetchWord,
-        },
-      });
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -87,12 +91,8 @@ export default function GameBoard() {
       </div>
     );
 
-  if (!word)
-    return (
-      <div className="flex justify-center py-8">
-        <Button onClick={fetchWord}>Retry</Button>
-      </div>
-    );
+  if (error) return <ErrorState onRetry={fetchWord} />;
+  if (!word) return null;
 
   if (showResult)
     return (
