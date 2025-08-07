@@ -5,6 +5,7 @@
     "start": "Test starten"
   },
   "loading": "Lädt...",
+  "evaluating": "Wird bewertet...",
   "question": "Frage",
   "answerPlaceholder": "Deine Antwort",
   "submit": "Absenden",

@@ -5,6 +5,7 @@
     "start": "Testi Başlat"
   },
   "loading": "Yükleniyor...",
+  "evaluating": "Değerlendiriliyor...",
   "question": "Soru",
   "answerPlaceholder": "Cevabın",
   "submit": "Gönder",

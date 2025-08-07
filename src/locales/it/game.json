@@ -4,5 +4,8 @@
   "letter": "Lettera",
   "guessPlaceholder": "La tua risposta",
   "guess": "Indovina",
-  "points": "Punti"
+  "points": "Punti",
+  "fetchError": "Impossibile recuperare la parola",
+  "correct": "Corretto!",
+  "incorrect": "Risposta errata"
 }

@@ -17,6 +17,8 @@ import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
 import { fetchJson } from '@/lib/fetchJson';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import '@/lib/i18nClient';
 
 interface Question {
   id: string;
@@ -33,6 +35,7 @@ export default function PlacementWizard() {
   const setLevelNumeric = useCareerStore((s) => s.setLevelNumeric);
   const setRequiredXP = useCareerStore((s) => s.setRequiredXP);
   const router = useRouter();
+  const { t } = useTranslation('career');
 
   const [phase, setPhase] = useState<Phase>('intro');
   const [items, setItems] = useState<Question[]>([]);
@@ -116,13 +119,13 @@ export default function PlacementWizard() {
         className="rounded-2xl shadow-md"
       >
         <CardHeader>
-          <CardTitle>Placement Test</CardTitle>
-          <CardDescription>Start the test to discover your level.</CardDescription>
+          <CardTitle>{t('placement.title')}</CardTitle>
+          <CardDescription>{t('placement.desc')}</CardDescription>
         </CardHeader>
         <CardFooter className="justify-end">
           <Button onClick={start} disabled={loading} className="rounded-2xl shadow-sm">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Loading...' : 'Begin test'}
+            {loading ? t('loading') : t('placement.start')}
           </Button>
         </CardFooter>
       </MotionCard>
@@ -139,7 +142,7 @@ export default function PlacementWizard() {
         className="rounded-2xl shadow-md"
       >
         <CardHeader>
-          <CardTitle>Evaluating...</CardTitle>
+          <CardTitle>{t('evaluating')}</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -160,7 +163,9 @@ export default function PlacementWizard() {
       className="rounded-2xl shadow-md"
     >
       <CardHeader>
-        <CardTitle>Question {index + 1}</CardTitle>
+        <CardTitle>
+          {t('question')} {index + 1}
+        </CardTitle>
         <CardDescription>{q.prompt}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -183,7 +188,7 @@ export default function PlacementWizard() {
             value={currentAnswer}
             onChange={(e) => recordAnswer(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && currentAnswer && next()}
-            placeholder="Your answer"
+            placeholder={t('answerPlaceholder')}
           />
         )}
       </CardContent>
@@ -196,7 +201,7 @@ export default function PlacementWizard() {
           {submitting && index === items.length - 1 && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          {index === items.length - 1 ? 'Submit' : 'Next'}
+          {index === items.length - 1 ? t('submit') : t('next')}
         </Button>
       </CardFooter>
     </MotionCard>

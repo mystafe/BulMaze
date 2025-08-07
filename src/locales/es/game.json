@@ -4,5 +4,8 @@
   "letter": "Letra",
   "guessPlaceholder": "Tu respuesta",
   "guess": "Adivinar",
-  "points": "Puntos"
+  "points": "Puntos",
+  "fetchError": "No se pudo obtener la palabra",
+  "correct": "¡Correcto!",
+  "incorrect": "Respuesta incorrecta"
 }

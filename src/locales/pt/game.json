@@ -4,5 +4,8 @@
   "letter": "Letra",
   "guessPlaceholder": "Seu palpite",
   "guess": "Adivinhar",
-  "points": "Pontos"
+  "points": "Pontos",
+  "fetchError": "Falha ao buscar palavra",
+  "correct": "Correto!",
+  "incorrect": "Palpite incorreto"
 }
