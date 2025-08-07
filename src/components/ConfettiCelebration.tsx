@@ -1,15 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { Options } from 'canvas-confetti';
+// eslint-disable-next-line no-unused-vars
+type ConfettiFn = (options: Options) => void;
 
 export default function ConfettiCelebration() {
   useEffect(() => {
-    let confetti: typeof import('canvas-confetti').default | undefined;
+    let confetti: ConfettiFn | undefined;
     let cancelled = false;
 
-    import('canvas-confetti').then((mod) => {
+    import('canvas-confetti').then((mod: unknown) => {
       if (!cancelled) {
-        confetti = mod.default;
+        const fn =
+          (mod as { default?: ConfettiFn }).default ?? (mod as ConfettiFn);
+        confetti = fn;
       }
     });
 
