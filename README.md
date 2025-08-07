@@ -47,7 +47,9 @@ pnpm test   # run tests
 ```
 
 ## Authentication Toggle
-Set `FEATURE_AUTH=false` (default) to run without login. To enable auth, set `FEATURE_AUTH=true` and configure NextAuth variables (`NEXTAUTH_SECRET`, OAuth provider IDs/secrets).
+Set `FEATURE_AUTH=false` (default) to run without login; career progress is stored in localStorage.
+To enable authentication, set `FEATURE_AUTH=true` and provide `NEXTAUTH_SECRET` along with Google and Apple OAuth keys.
+When enabled, users must sign in and their career progress is saved via `/api/profile` using NextAuth.
 
 ## Deployment (Vercel)
 - Use `pnpm install` and `pnpm build` for install/build commands
