@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import { useUiStore } from '@/lib/store';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/toaster';
-import ConfettiCelebration from './ConfettiCelebration';
 
 export default function Providers({ children }: { children: ReactNode }) {
   const theme = useUiStore((s) => s.theme);
@@ -27,7 +26,6 @@ export default function Providers({ children }: { children: ReactNode }) {
       <SessionProvider>
         {children}
         <Toaster />
-        <ConfettiCelebration />
       </SessionProvider>
     );
   }
@@ -36,7 +34,6 @@ export default function Providers({ children }: { children: ReactNode }) {
     <>
       {children}
       <Toaster />
-      <ConfettiCelebration />
     </>
   );
 }
