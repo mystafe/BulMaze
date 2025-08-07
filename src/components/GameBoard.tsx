@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LevelProgress from './LevelProgress';
@@ -30,6 +30,7 @@ export default function GameBoard() {
   const takeLetter = useGameStore((s) => s.takeLetter);
   const makeGuess = useGameStore((s) => s.makeGuess);
   const setWordItem = useGameStore((s) => s.setWordItem);
+  const reset = useGameStore((s) => s.reset);
 
   const awardXP = useCareerStore((s) => s.awardXP);
   const level = useCareerStore((s) => s.levelNumeric);
@@ -68,12 +69,15 @@ export default function GameBoard() {
     }
   }, [fetchWord, word]);
 
-  const mask = buildMask(word, revealed);
+  const mask = useMemo(() => buildMask(word, revealed), [word, revealed]);
 
   const handleGuess = () => {
     if (makeGuess(guess)) {
       const xp = calcXpGain(level, points);
-      awardXP(xp);
+      const leveledUp = awardXP(xp);
+      window.dispatchEvent(
+        new CustomEvent('bulmaze:win', { detail: { leveledUp, xp } }),
+      );
       setShowResult(true);
     }
     setGuess('');
@@ -81,7 +85,8 @@ export default function GameBoard() {
 
   const handleNext = () => {
     setShowResult(false);
-    fetchWord();
+    reset();
+    void fetchWord();
   };
 
   if (loading)
@@ -101,6 +106,7 @@ export default function GameBoard() {
         example={example}
         translation={translation}
         onNext={handleNext}
+        loading={loading}
       />
     );
 
@@ -116,6 +122,7 @@ export default function GameBoard() {
           variant="secondary"
           onClick={takeLetter}
           aria-label="Letter"
+          disabled={loading}
           className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           Letter
@@ -127,10 +134,12 @@ export default function GameBoard() {
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
           placeholder="Your guess"
           aria-label="Guess"
+          disabled={loading}
         />
         <Button
           onClick={handleGuess}
           aria-label="Guess"
+          disabled={loading}
           className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           Guess

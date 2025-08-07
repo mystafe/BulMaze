@@ -1,3 +1,15 @@
+function normalize(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .trim()
+    .toLowerCase();
+}
+
+export function diacriticInsensitiveEquals(a: string, b: string): boolean {
+  return normalize(a) === normalize(b);
+}
+
 export function buildMask(word: string, revealed: Set<string>): string {
   return word
     .split('')

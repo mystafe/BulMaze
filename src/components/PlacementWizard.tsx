@@ -81,10 +81,9 @@ export default function PlacementWizard() {
       const first = !localStorage.getItem('placementDone');
       if (first) {
         localStorage.setItem('placementDone', '1');
-        router.push('/career?celebrate=1#dashboard');
-      } else {
-        router.push('/career#dashboard');
       }
+      window.dispatchEvent(new Event('bulmaze:placement-finished'));
+      router.push(first ? '/career?celebrate=1#dashboard' : '/career#dashboard');
     } catch {
       // error handled in fetchJson
     } finally {
