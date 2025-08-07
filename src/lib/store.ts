@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
@@ -9,6 +10,7 @@ import {
 import { postJSON } from './postJson';
 
 const authEnabled = process.env.FEATURE_AUTH === 'true';
+let revealedSetWarned = false;
 
 export interface UIState {
   uiLang: string;
@@ -17,9 +19,9 @@ export interface UIState {
 }
 
 export interface UIActions {
-  setUiLang: (lang: string) => void;
-  setTargetLang: (lang: string) => void;
-  setTheme: (theme: 'light' | 'dark') => void;
+  setUiLang(lang: string): void;
+  setTargetLang(lang: string): void;
+  setTheme(theme: 'light' | 'dark'): void;
 }
 
 const uiStore: StateCreator<UIState & UIActions> = (set) => ({
@@ -62,10 +64,10 @@ export interface GameState {
 }
 
 export interface GameActions {
-  setWordItem: (item: WordItem) => void;
-  takeLetter: () => void;
-  makeGuess: (guess: string) => boolean;
-  reset: () => void;
+  setWordItem(item: WordItem): void;
+  takeLetter(): void;
+  makeGuess(guess: string): boolean;
+  reset(): void;
 }
 
 const initialGameState = (): GameState => ({
@@ -105,6 +107,10 @@ export const useGameStore = create<GameState & GameActions>()(
         reviver: (key, value) => {
           if (key === 'revealed') {
             if (value instanceof Set) return value as Set<string>;
+            if (!revealedSetWarned && process.env.NODE_ENV !== 'production') {
+              console.warn('`revealed` was not a Set; fixing.');
+              revealedSetWarned = true;
+            }
             if (Array.isArray(value)) return new Set<string>(value);
             if (value && typeof value === 'object')
               return new Set<string>(Array.from(value as Iterable<string>));
@@ -115,8 +121,23 @@ export const useGameStore = create<GameState & GameActions>()(
       }),
       migrate: (state: unknown) => {
         const s = state as { revealed?: unknown };
-        if (Array.isArray(s?.revealed)) {
-          return { ...s, revealed: new Set<string>(s.revealed) };
+        if (s && !(s.revealed instanceof Set)) {
+          if (!revealedSetWarned && process.env.NODE_ENV !== 'production') {
+            console.warn('Migrating non-Set `revealed`; fixing.');
+            revealedSetWarned = true;
+          }
+          if (Array.isArray(s.revealed)) {
+            return { ...s, revealed: new Set<string>(s.revealed) };
+          }
+          if (s.revealed && typeof s.revealed === 'object') {
+            return {
+              ...s,
+              revealed: new Set<string>(
+                Array.from(s.revealed as Iterable<string>),
+              ),
+            };
+          }
+          return { ...s, revealed: new Set<string>() };
         }
         return state;
       },
@@ -133,13 +154,13 @@ export interface CareerState {
 }
 
 export interface CareerActions {
-  setCEFR: (cefr: CEFR) => void;
-  setLevelNumeric: (level: LevelNumeric) => void;
-  setRequiredXP: (xp: number) => void;
-  awardXP: (gain: number) => boolean;
-  maybeLevelUp: () => boolean;
-  load: () => Promise<void>;
-  save: () => Promise<void>;
+  setCEFR(cefr: CEFR): void;
+  setLevelNumeric(level: LevelNumeric): void;
+  setRequiredXP(xp: number): void;
+  awardXP(gain: number): boolean;
+  maybeLevelUp(): boolean;
+  load(): Promise<void>;
+  save(): Promise<void>;
 }
 
 const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({

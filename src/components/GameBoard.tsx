@@ -114,6 +114,12 @@ export default function GameBoard() {
     await fetchWord();
   };
 
+  const handleDebugNext = async () => {
+    for (let i = 0; i < 3; i += 1) {
+      await handleNext();
+    }
+  };
+
   if (loading)
     return (
       <div className="flex justify-center py-8">
@@ -126,55 +132,74 @@ export default function GameBoard() {
 
   if (showResult)
     return (
-      <WordResultCard
-        word={word}
-        example={example}
-        translation={translation}
-        onNext={handleNext}
-        loading={loading}
-      />
+      <>
+        <WordResultCard
+          word={word}
+          example={example}
+          translation={translation}
+          onNext={handleNext}
+          loading={loading}
+        />
+        {process.env.NODE_ENV !== 'production' && (
+          <Button onClick={handleDebugNext} className="mt-4" aria-label="Debug Next x3">
+            Debug Next x3
+          </Button>
+        )}
+      </>
     );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 rounded-2xl p-6 shadow-md"
-    >
-      <LevelProgress />
-      <p className="text-lg">{t('hint')}: {hint}</p>
-      <p className="text-2xl tracking-widest">{mask}</p>
-      <motion.div animate={shake} className="flex gap-2">
-        <Button
-          variant="secondary"
-          onClick={handleLetter}
-          aria-label={t('letter')}
-          disabled={loading}
-          className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-        >
-          {t('letter')}
-        </Button>
-        <Input
-          className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
-          value={guess}
-          onChange={(e) => setGuess(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
-          placeholder={t('guessPlaceholder')}
-          aria-label={t('guess')}
-          disabled={loading}
-        />
-        <Button
-          onClick={handleGuess}
-          aria-label={t('guess')}
-          disabled={loading}
-          className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-        >
-          {t('guess')}
-        </Button>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 rounded-2xl p-6 shadow-md"
+      >
+        <LevelProgress />
+        <p className="text-lg">{t('hint')}: {hint}</p>
+        <p className="text-2xl tracking-widest">{mask}</p>
+        <motion.div animate={shake} className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleLetter}
+            aria-label={t('letter')}
+            disabled={loading}
+            className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+          >
+            {t('letter')}
+          </Button>
+          <Input
+            className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
+            placeholder={t('guessPlaceholder')}
+            aria-label={t('guess')}
+            disabled={loading}
+          />
+          <Button
+            onClick={handleGuess}
+            aria-label={t('guess')}
+            disabled={loading}
+            className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+          >
+            {t('guess')}
+          </Button>
+        </motion.div>
+        <p>
+          {t('points')}: {points}
+        </p>
       </motion.div>
-      <p>
-        {t('points')}: {points}
-      </p>
-    </motion.div>
+      {process.env.NODE_ENV !== 'production' && (
+        <Button
+          onClick={handleDebugNext}
+          aria-label="Debug Next x3"
+          className="mt-4"
+          disabled={loading}
+        >
+          Debug Next x3
+        </Button>
+      )}
+    </>
   );
 }
