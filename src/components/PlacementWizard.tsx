@@ -11,28 +11,32 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
-import { Loader2 } from 'lucide-react';
 import { fetchJson } from '@/lib/fetchJson';
 
-  interface Question {
-    id: string;
-    type: 'mcq' | 'fill';
-    prompt: string;
-    options?: string[];
-    correct?: string;
-  }
+interface Question {
+  id: string;
+  type: 'mcq' | 'fill';
+  prompt: string;
+  options?: string[];
+}
+
+type Phase = 'intro' | 'test' | 'result';
 
 export default function PlacementWizard() {
   const uiLang = useUiStore((s) => s.uiLang);
   const setCEFR = useCareerStore((s) => s.setCEFR);
+  const setLevelNumeric = useCareerStore((s) => s.setLevelNumeric);
+  const setRequiredXP = useCareerStore((s) => s.setRequiredXP);
   const router = useRouter();
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [step, setStep] = useState<number | null>(null);
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [items, setItems] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,10 +48,11 @@ export default function PlacementWizard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uiLang }),
       });
-      const items = data.items.slice(0, 10);
-      setQuestions(items);
-      setAnswers(Array(items.length).fill(''));
-      setStep(0);
+      const list = data.items.slice(0, 10);
+      setItems(list);
+      setAnswers({});
+      setIndex(0);
+      setPhase('test');
     } catch {
       // error handled in fetchJson
     } finally {
@@ -55,12 +60,25 @@ export default function PlacementWizard() {
     }
   };
 
+  const recordAnswer = (val: string) => {
+    const q = items[index];
+    setAnswers((prev) => ({ ...prev, [q.id]: val }));
+  };
+
+  const next = () => {
+    const q = items[index];
+    if (!answers[q.id]) return;
+    if (index === items.length - 1) {
+      void submit();
+    } else {
+      setIndex(index + 1);
+    }
+  };
+
   const submit = async () => {
     setSubmitting(true);
-    const payload = questions.map((q, i) => ({
-      id: q.id,
-      correct: answers[i].trim().toLowerCase() === (q.correct ?? '').toLowerCase(),
-    }));
+    setPhase('result');
+    const payload = items.map((q) => ({ id: q.id, answer: answers[q.id] || '' }));
     try {
       const { cefr } = await fetchJson<{ cefr: CEFR }>(
         '/api/ai/evaluate',
@@ -70,12 +88,10 @@ export default function PlacementWizard() {
           body: JSON.stringify({ answers: payload }),
         },
       );
-      const levelNumeric = cefrToNumeric(cefr as CEFR);
+      const levelNumeric = cefrToNumeric(cefr);
       setCEFR(cefr);
-      useCareerStore.setState({
-        levelNumeric,
-        requiredXp: requiredXP(levelNumeric),
-      });
+      setLevelNumeric(levelNumeric);
+      setRequiredXP(requiredXP(levelNumeric));
       const first = !localStorage.getItem('placementDone');
       if (first) {
         localStorage.setItem('placementDone', '1');
@@ -89,7 +105,7 @@ export default function PlacementWizard() {
     }
   };
 
-  if (step === null) {
+  if (phase === 'intro') {
     return (
       <Card>
         <CardHeader>
@@ -99,31 +115,33 @@ export default function PlacementWizard() {
         <CardFooter className="justify-end">
           <Button onClick={start} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Loading...' : 'Start Test'}
+            {loading ? 'Loading...' : 'Begin test'}
           </Button>
         </CardFooter>
       </Card>
     );
   }
 
-  const q = questions[step];
-  const setAnswer = (val: string) =>
-    setAnswers((prev) => {
-      const copy = [...prev];
-      copy[step] = val;
-      return copy;
-    });
-  const next = () => {
-    if (step === questions.length - 1) submit();
-    else setStep(step + 1);
-  };
+  if (phase === 'result') {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Evaluating...</CardTitle>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const q = items[index];
+  const currentAnswer = answers[q.id] || '';
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Question {step + 1}
-        </CardTitle>
+        <CardTitle>Question {index + 1}</CardTitle>
         <CardDescription>{q.prompt}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -132,8 +150,8 @@ export default function PlacementWizard() {
             {q.options.map((opt) => (
               <Button
                 key={opt}
-                variant={answers[step] === opt ? 'default' : 'outline'}
-                onClick={() => setAnswer(opt)}
+                variant={currentAnswer === opt ? 'default' : 'outline'}
+                onClick={() => recordAnswer(opt)}
               >
                 {opt}
               </Button>
@@ -141,19 +159,19 @@ export default function PlacementWizard() {
           </div>
         ) : (
           <Input
-            value={answers[step]}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && answers[step] && next()}
+            value={currentAnswer}
+            onChange={(e) => recordAnswer(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && currentAnswer && next()}
             placeholder="Your answer"
           />
         )}
       </CardContent>
       <CardFooter className="justify-end">
-        <Button onClick={next} disabled={!answers[step] || submitting}>
-          {submitting && step === questions.length - 1 && (
+        <Button onClick={next} disabled={!currentAnswer || submitting}>
+          {submitting && index === items.length - 1 && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          {step === questions.length - 1 ? 'Submit' : 'Next'}
+          {index === items.length - 1 ? 'Submit' : 'Next'}
         </Button>
       </CardFooter>
     </Card>
