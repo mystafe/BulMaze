@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { buildMask, revealRandomLetter, calcPoints } from './scoring';
+import { buildMask, revealRandomLetter, calcPoints, calcXpGain } from './scoring';
 
 describe('scoring utils', () => {
   it('buildMask hides unrevealed letters', () => {
@@ -25,5 +25,9 @@ describe('scoring utils', () => {
 
   it('calcPoints has a minimum of 10', () => {
     expect(calcPoints(15)).toBe(10);
+  });
+
+  it('calcXpGain scales with level and points', () => {
+    expect(calcXpGain(2, 80)).toBe(50 + 2 * 5 + Math.floor(80 / 5));
   });
 });

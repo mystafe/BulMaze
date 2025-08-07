@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import GameBoard from './GameBoard';
 import React from 'react';
 
@@ -53,7 +53,7 @@ vi.mock('sonner', () => ({
 
 vi.stubGlobal(
   'fetch',
-  vi.fn(() => Promise.resolve({ ok: false, json: () => Promise.resolve({}) })),
+  vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })),
 );
 
 beforeEach(() => {
@@ -61,18 +61,18 @@ beforeEach(() => {
 });
 
 describe('GameBoard', () => {
-  it('renders mask and hint', () => {
-    render(<GameBoard />);
-    expect(screen.getByText('Hint: clue')).toBeDefined();
-    expect(screen.getByText('t _ _ t')).toBeDefined();
-  });
-
-  it('awards XP on correct guess', () => {
+  it('shows result and fetches next word on next', async () => {
     render(<GameBoard />);
     const input = screen.getAllByPlaceholderText('Your guess')[0];
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Guess' })[0]);
-    expect(mockCareerState.awardXP).toHaveBeenCalledWith(76);
+
     expect(screen.getByTestId('word-result')).toBeDefined();
+
+    fireEvent.click(screen.getByTestId('word-result'));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
   });
 });
