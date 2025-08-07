@@ -16,32 +16,43 @@ vi.mock('@/components/WordResultCard', () => ({
   ),
 }));
 
-const mockGameState = {
-  word: 'test',
-  hint: 'clue',
-  example: 'ex',
-  exampleTranslation: 'ex t',
-  revealed: new Set(['t']),
-  points: 80,
-  setWordItem: vi.fn(),
-  reset: vi.fn(),
-};
-
-const mockCareerState = {
-  awardXP: vi.fn(),
-  levelNumeric: 2,
-  cefr: 'A2',
-};
-
-const mockUiState = {
-  uiLang: 'en',
-  targetLang: 'en',
-};
+const {
+  mockGameState,
+  mockCareerState,
+  mockUiState,
+  mockSetState,
+} = vi.hoisted(() => {
+  const mockGameState = {
+    word: 'test',
+    hint: 'clue',
+    example: 'ex',
+    exampleTranslation: 'ex t',
+    revealed: new Set(['t']),
+    points: 80,
+    lettersTaken: 2,
+    setWordItem: vi.fn(),
+    reset: vi.fn(),
+  };
+  const mockCareerState = {
+    awardXP: vi.fn(),
+    levelNumeric: 2,
+    cefr: 'A2',
+  };
+  const mockUiState = {
+    uiLang: 'en',
+    targetLang: 'en',
+  };
+  const mockSetState = vi.fn((fn: any) => {
+    const result = typeof fn === 'function' ? fn(mockGameState) : fn;
+    Object.assign(mockGameState, result);
+  });
+  return { mockGameState, mockCareerState, mockUiState, mockSetState };
+});
 
 vi.mock('@/lib/store', () => ({
   useGameStore: Object.assign(
     (selector: any) => selector(mockGameState),
-    { setState: vi.fn() }
+    { setState: mockSetState }
   ),
   useCareerStore: (selector: any) => selector(mockCareerState),
   useUiStore: (selector: any) => selector(mockUiState),
@@ -57,11 +68,21 @@ vi.stubGlobal(
 );
 
 beforeEach(() => {
+  mockGameState.word = 'test';
+  mockGameState.hint = 'clue';
+  mockGameState.example = 'ex';
+  mockGameState.exampleTranslation = 'ex t';
+  mockGameState.revealed = new Set(['t']);
+  mockGameState.points = 80;
+  mockGameState.lettersTaken = 2;
+  mockGameState.setWordItem.mockReset();
+  mockGameState.reset.mockReset();
+  mockCareerState.awardXP.mockReset();
   vi.clearAllMocks();
 });
 
 describe('GameBoard', () => {
-  it('shows result and fetches next word on next', async () => {
+  it('shows result, resets and fetches next word on next', async () => {
     render(<GameBoard />);
     const input = screen.getAllByPlaceholderText('Your guess')[0];
     fireEvent.change(input, { target: { value: 'test' } });
@@ -73,6 +94,18 @@ describe('GameBoard', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledTimes(1);
+      expect(mockGameState.reset).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('reduces points to 90 when taking a letter', () => {
+    mockGameState.revealed = new Set();
+    mockGameState.points = 100;
+    mockGameState.lettersTaken = 0;
+    render(<GameBoard />);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Letter' })[0]);
+
+    expect(mockGameState.points).toBe(90);
+    expect(mockGameState.lettersTaken).toBe(1);
   });
 });
