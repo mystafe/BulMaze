@@ -16,28 +16,32 @@ export const WordItemSchema = z.object({
 export type WordItem = z.infer<typeof WordItemSchema>;
 export type Lang = z.infer<typeof LangSchema>;
 
-const PlacementQuestionSchema = z.object({
-  question: z.string(),
+const PlacementItemSchema = z.object({
+  id: z.string(),
+  type: z.enum(['mcq', 'fill']),
+  prompt: z.string(),
   options: z.array(z.string()).optional(),
-  answer: z.string(),
+  correct: z.string().optional(),
 });
 
-export const PlacementTestSchema = z.array(PlacementQuestionSchema).length(10);
+export const PlacementSchema = z.object({
+  items: z.array(PlacementItemSchema).length(10),
+});
 
-export type PlacementTest = z.infer<typeof PlacementTestSchema>;
+export type Placement = z.infer<typeof PlacementSchema>;
 
-export const PlacementResultSchema = z.object({
+export const EvaluateResultSchema = z.object({
   cefr: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
 });
 
-export type PlacementResult = z.infer<typeof PlacementResultSchema>;
+export type EvaluateResult = z.infer<typeof EvaluateResultSchema>;
 
 const schemas = {
   LangSchema,
   PosSchema,
   WordItemSchema,
-  PlacementTestSchema,
-  PlacementResultSchema,
+  PlacementSchema,
+  EvaluateResultSchema,
 };
 
 export default schemas;

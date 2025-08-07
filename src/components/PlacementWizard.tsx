@@ -17,11 +17,13 @@ import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
 import { Loader2 } from 'lucide-react';
 import { fetchJson } from '@/lib/fetchJson';
 
-interface Question {
-  question: string;
-  options?: string[];
-  answer: string;
-}
+  interface Question {
+    id: string;
+    type: 'mcq' | 'fill';
+    prompt: string;
+    options?: string[];
+    correct?: string;
+  }
 
 export default function PlacementWizard() {
   const uiLang = useUiStore((s) => s.uiLang);
@@ -37,15 +39,12 @@ export default function PlacementWizard() {
   const start = async () => {
     setLoading(true);
     try {
-      const data = await fetchJson<Question[]>(
-        '/api/ai/placement',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uiLang }),
-        },
-      );
-      const items = data.slice(0, 10);
+      const data = await fetchJson<{ items: Question[] }>('/api/ai/placement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uiLang }),
+      });
+      const items = data.items.slice(0, 10);
       setQuestions(items);
       setAnswers(Array(items.length).fill(''));
       setStep(0);
@@ -59,9 +58,8 @@ export default function PlacementWizard() {
   const submit = async () => {
     setSubmitting(true);
     const payload = questions.map((q, i) => ({
-      question: q.question,
-      answer: answers[i],
-      correct: answers[i].trim().toLowerCase() === q.answer.toLowerCase(),
+      id: q.id,
+      correct: answers[i].trim().toLowerCase() === (q.correct ?? '').toLowerCase(),
     }));
     try {
       const { cefr } = await fetchJson<{ cefr: CEFR }>(
@@ -126,7 +124,7 @@ export default function PlacementWizard() {
         <CardTitle>
           Question {step + 1}
         </CardTitle>
-        <CardDescription>{q.question}</CardDescription>
+        <CardDescription>{q.prompt}</CardDescription>
       </CardHeader>
       <CardContent>
         {q.options ? (

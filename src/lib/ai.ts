@@ -1,12 +1,13 @@
+import 'server-only';
 import OpenAI from 'openai';
 import {
   Lang,
   WordItemSchema,
-  PlacementTestSchema,
-  PlacementResultSchema,
+  PlacementSchema,
+  EvaluateResultSchema,
   type WordItem,
-  type PlacementTest,
-  type PlacementResult,
+  type Placement,
+  type EvaluateResult,
 } from './schemas';
 
 function getClient(): OpenAI {
@@ -29,24 +30,67 @@ export async function generateWordItem(args: {
   const baseUser =
     `CEFR level ${cefr}. Generate ONE common word with fields: word, hint (in ${uiLang}), example (in ${targetLang}), exampleTranslation (in ${uiLang}), pos (noun|verb|adj), difficulty (1-10).`;
 
+    const prompts = [
+      { user: baseUser, temperature: 0.2 },
+      {
+        user: `${baseUser} Return ONLY valid JSON with no extra text.`,
+        temperature: 0,
+      },
+    ];
+
+    for (const { user, temperature } of prompts) {
+      try {
+        const completion = await openai.responses.create({
+          model: 'gpt-4.1-mini',
+          temperature,
+          input: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+        });
+        const data = JSON.parse(completion.output_text);
+        return WordItemSchema.parse(data);
+      } catch {
+        if (user === prompts[prompts.length - 1].user) {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+export async function generatePlacement(args: {
+  uiLang: Lang;
+}): Promise<Placement | null> {
+  const openai = getClient();
+  const { uiLang } = args;
+  const system =
+    'You are a language placement test generator. Return VALID JSON.';
+  const baseUser =
+    `Generate 10 mixed questions (multiple-choice and fill-in) level-graded in ${uiLang}. Include correct answers. Structure: {id,type:'mcq'|'fill',prompt,options?,correct?} in an object {items:[...]}.`;
+
   const prompts = [
-    baseUser,
-    `${baseUser} Return ONLY valid JSON with no extra text.`,
+    { user: baseUser, temperature: 0.2 },
+    {
+      user: `${baseUser} Return ONLY valid JSON with no extra text.`,
+      temperature: 0,
+    },
   ];
 
-  for (const user of prompts) {
+  for (const { user, temperature } of prompts) {
     try {
       const completion = await openai.responses.create({
         model: 'gpt-4.1-mini',
+        temperature,
         input: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
       });
       const data = JSON.parse(completion.output_text);
-      return WordItemSchema.parse(data);
+      return PlacementSchema.parse(data);
     } catch {
-      if (user === prompts[prompts.length - 1]) {
+      if (user === prompts[prompts.length - 1].user) {
         return null;
       }
     }
@@ -54,69 +98,42 @@ export async function generateWordItem(args: {
   return null;
 }
 
-export async function generatePlacementTest(args: {
-  uiLang: Lang;
-}): Promise<PlacementTest> {
-  const openai = getClient();
-  const { uiLang } = args;
-  const system =
-    'You are a language placement test generator. Return VALID JSON.';
-  const user =
-    `Generate 10 mixed questions (multiple-choice and fill-in) level-graded in ${uiLang}. Include correct answers. Return an array of {question, options?, answer}.`;
-  const completion = await openai.responses.create({
-    model: 'gpt-4.1-mini',
-    input: [
-      { role: 'system', content: system },
-      { role: 'user', content: user },
-    ],
-  });
-  const data = JSON.parse(completion.output_text);
-  return PlacementTestSchema.parse(data);
-}
-
-function fallbackEvaluate(answers: unknown): PlacementResult {
-  let total = 0;
-  let correct = 0;
-  if (Array.isArray(answers)) {
-    total = answers.length;
-    for (const ans of answers) {
-      if (typeof ans === 'boolean') correct += ans ? 1 : 0;
-      else if (typeof ans === 'object' && ans && 'correct' in ans) {
-        correct += (Boolean((ans as { correct: unknown }).correct)) ? 1 : 0;
-      }
-    }
-  }
-  const ratio = total ? correct / total : 0;
-  let cefr: PlacementResult['cefr'] = 'A1';
-  if (ratio > 0.9) cefr = 'C2';
-  else if (ratio > 0.8) cefr = 'C1';
-  else if (ratio > 0.7) cefr = 'B2';
-  else if (ratio > 0.6) cefr = 'B1';
-  else if (ratio > 0.4) cefr = 'A2';
-  return { cefr };
-}
-
 export async function evaluatePlacementAnswers(args: {
   answers: unknown;
-}): Promise<PlacementResult> {
+}): Promise<EvaluateResult | null> {
   const openai = getClient();
   const { answers } = args;
   const system =
     'You evaluate placement tests and return JSON { "cefr": "A1|A2|B1|B2|C1|C2" } only.';
-  const user = `Answers: ${JSON.stringify(answers)}`;
-  try {
-    const completion = await openai.responses.create({
-      model: 'gpt-4.1-mini',
-      input: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-    });
-    const data = JSON.parse(completion.output_text);
-    return PlacementResultSchema.parse(data);
-  } catch {
-    return fallbackEvaluate(answers);
+  const baseUser = `Answers: ${JSON.stringify(answers)}`;
+
+  const prompts = [
+    { user: baseUser, temperature: 0.2 },
+    {
+      user: `${baseUser} Return ONLY valid JSON with no extra text.`,
+      temperature: 0,
+    },
+  ];
+
+  for (const { user, temperature } of prompts) {
+    try {
+      const completion = await openai.responses.create({
+        model: 'gpt-4.1-mini',
+        temperature,
+        input: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      });
+      const data = JSON.parse(completion.output_text);
+      return EvaluateResultSchema.parse(data);
+    } catch {
+      if (user === prompts[prompts.length - 1].user) {
+        return null;
+      }
+    }
   }
+  return null;
 }
 
 export { getClient as createOpenAIClient };
