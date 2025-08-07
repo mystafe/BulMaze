@@ -112,9 +112,10 @@ export const useGameStore = create<GameState & GameActions>()(
           return value;
         },
       }),
-      migrate: (state: any) => {
-        if (Array.isArray(state?.revealed)) {
-          return { ...state, revealed: new Set<string>(state.revealed) };
+      migrate: (state: unknown) => {
+        const s = state as { revealed?: unknown };
+        if (Array.isArray(s?.revealed)) {
+          return { ...s, revealed: new Set<string>(s.revealed) };
         }
         return state;
       },
