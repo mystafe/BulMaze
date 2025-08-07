@@ -4,5 +4,8 @@
   "letter": "Buchstabe",
   "guessPlaceholder": "Dein Tipp",
   "guess": "Raten",
-  "points": "Punkte"
+  "points": "Punkte",
+  "fetchError": "Wort konnte nicht geladen werden",
+  "correct": "Richtig!",
+  "incorrect": "Falscher Tipp"
 }

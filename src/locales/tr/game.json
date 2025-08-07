@@ -4,5 +4,8 @@
   "letter": "Harf",
   "guessPlaceholder": "Tahminin",
   "guess": "Tahmin et",
-  "points": "Puan"
+  "points": "Puan",
+  "fetchError": "Kelime alınamadı",
+  "correct": "Doğru!",
+  "incorrect": "Yanlış tahmin"
 }

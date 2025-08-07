@@ -5,6 +5,7 @@
     "start": "Iniciar Prueba"
   },
   "loading": "Cargando...",
+  "evaluating": "Evaluando...",
   "question": "Pregunta",
   "answerPlaceholder": "Tu respuesta",
   "submit": "Enviar",

@@ -22,6 +22,8 @@ import { fetchJson } from '@/lib/fetchJson';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { motion, useAnimation } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import '@/lib/i18nClient';
 
 export default function GameBoard() {
   const [guess, setGuess] = useState('');
@@ -45,6 +47,7 @@ export default function GameBoard() {
 
   const uiLang = useUiStore((s) => s.uiLang);
   const targetLang = useUiStore((s) => s.targetLang);
+  const { t } = useTranslation('game');
 
   const fetchWord = useCallback(async () => {
     setLoading(true);
@@ -65,11 +68,11 @@ export default function GameBoard() {
       setWordItem(data);
     } catch {
       setError(true);
-      toast.error('Failed to fetch word');
+      toast.error(t('fetchError'));
     } finally {
       setLoading(false);
     }
-  }, [targetLang, cefr, uiLang, setWordItem]);
+  }, [targetLang, cefr, uiLang, setWordItem, t]);
 
   useEffect(() => {
     if (!word) {
@@ -98,10 +101,10 @@ export default function GameBoard() {
       window.dispatchEvent(
         new CustomEvent('bulmaze:win', { detail: { leveledUp, xp } }),
       );
-      toast.success('Correct!');
+      toast.success(t('correct'));
       setShowResult(true);
     } else {
-      toast.error('Incorrect guess');
+      toast.error(t('incorrect'));
       void shake.start({
         x: [0, -10, 10, -10, 10, 0],
         transition: { duration: 0.4 },
@@ -144,37 +147,39 @@ export default function GameBoard() {
       className="space-y-6 rounded-2xl p-6 shadow-md"
     >
       <LevelProgress />
-      <p className="text-lg">Hint: {hint}</p>
+      <p className="text-lg">{t('hint')}: {hint}</p>
       <p className="text-2xl tracking-widest">{mask}</p>
       <motion.div animate={shake} className="flex gap-2">
         <Button
           variant="secondary"
           onClick={handleLetter}
-          aria-label="Letter"
+          aria-label={t('letter')}
           disabled={loading}
           className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
         >
-          Letter
+          {t('letter')}
         </Button>
         <Input
           className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
-          placeholder="Your guess"
-          aria-label="Guess"
+          placeholder={t('guessPlaceholder')}
+          aria-label={t('guess')}
           disabled={loading}
         />
         <Button
           onClick={handleGuess}
-          aria-label="Guess"
+          aria-label={t('guess')}
           disabled={loading}
           className="rounded-2xl shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
         >
-          Guess
+          {t('guess')}
         </Button>
       </motion.div>
-      <p>Points: {points}</p>
+      <p>
+        {t('points')}: {points}
+      </p>
     </motion.div>
   );
 }

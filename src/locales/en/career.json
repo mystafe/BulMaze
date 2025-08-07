@@ -5,6 +5,7 @@
     "start": "Start Test"
   },
   "loading": "Loading...",
+  "evaluating": "Evaluating...",
   "question": "Question",
   "answerPlaceholder": "Your answer",
   "submit": "Submit",

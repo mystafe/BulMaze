@@ -4,5 +4,8 @@
   "letter": "Letter",
   "guessPlaceholder": "Your guess",
   "guess": "Guess",
-  "points": "Points"
+  "points": "Points",
+  "fetchError": "Failed to fetch word",
+  "correct": "Correct!",
+  "incorrect": "Incorrect guess"
 }
