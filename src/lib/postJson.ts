@@ -1,8 +1,7 @@
 import { toast } from 'sonner';
 
-interface PostJsonOptions extends RequestInit {
+interface PostJsonOptions extends Omit<RequestInit, 'body'> {
   timeout?: number;
-  body?: unknown;
 }
 
 export async function postJSON<T>(
