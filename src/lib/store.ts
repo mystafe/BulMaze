@@ -31,9 +31,12 @@ const uiStore: StateCreator<UIState & UIActions> = (set) => ({
 });
 
 export const useUiStore = create<UIState & UIActions>()(
-  (authEnabled ? uiStore : persist(uiStore, { name: 'ui' })) as StateCreator<
-    UIState & UIActions
-  >,
+  (authEnabled
+    ? uiStore
+    : persist(uiStore, {
+        name: 'ui',
+        storage: createJSONStorage(() => localStorage),
+      })) as StateCreator<UIState & UIActions>,
 );
 
 export interface WordItem {
@@ -64,30 +67,23 @@ export interface GameActions {
   reset: () => void;
 }
 
+const initialGameState = (): GameState => ({
+  word: '',
+  hint: '',
+  example: '',
+  exampleTranslation: '',
+  pos: '',
+  difficulty: '',
+  revealed: new Set<string>(),
+  lettersTaken: 0,
+  points: 100,
+});
+
 export const useGameStore = create<GameState & GameActions>()(
   persist(
     (set, get) => ({
-      word: '',
-      hint: '',
-      example: '',
-      exampleTranslation: '',
-      pos: '',
-      difficulty: '',
-      revealed: new Set<string>(),
-      lettersTaken: 0,
-      points: 100,
-      setWordItem: (item) =>
-        set({
-          word: item.word,
-          hint: item.hint,
-          example: item.example,
-          exampleTranslation: item.exampleTranslation,
-          pos: item.pos,
-          difficulty: item.difficulty,
-          revealed: new Set<string>(),
-          lettersTaken: 0,
-          points: 100,
-        }),
+      ...initialGameState(),
+      setWordItem: (item) => set({ ...initialGameState(), ...item }),
       takeLetter: () =>
         set((state) => {
           const lettersTaken = state.lettersTaken + 1;
@@ -98,18 +94,7 @@ export const useGameStore = create<GameState & GameActions>()(
           };
         }),
       makeGuess: (guess) => diacriticInsensitiveEquals(guess, get().word),
-      reset: () =>
-        set({
-          word: '',
-          hint: '',
-          example: '',
-          exampleTranslation: '',
-          pos: '',
-          difficulty: '',
-          revealed: new Set<string>(),
-          lettersTaken: 0,
-          points: 100,
-        }),
+      reset: () => set(initialGameState()),
     }),
     {
       name: 'game',
@@ -127,6 +112,12 @@ export const useGameStore = create<GameState & GameActions>()(
           return value;
         },
       }),
+      migrate: (state: any) => {
+        if (Array.isArray(state?.revealed)) {
+          return { ...state, revealed: new Set<string>(state.revealed) };
+        }
+        return state;
+      },
     },
   ),
 );
@@ -141,8 +132,10 @@ export interface CareerState {
 
 export interface CareerActions {
   setCEFR: (cefr: CEFR) => void;
+  setLevelNumeric: (level: LevelNumeric) => void;
+  setRequiredXP: (xp: number) => void;
   awardXP: (gain: number) => boolean;
-  maybeLevelUp: () => void;
+  maybeLevelUp: () => boolean;
   load: () => Promise<void>;
   save: () => Promise<void>;
 }
@@ -154,39 +147,43 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
   requiredXp: requiredXP(1),
   history: [] as number[],
   setCEFR: (cefr: CEFR) => {
-    const levelNumeric = cefrToNumeric(cefr);
-    set({
-      cefr,
-      levelNumeric,
-      requiredXp: requiredXP(levelNumeric),
-    });
+    set({ cefr });
+    get().setLevelNumeric(cefrToNumeric(cefr));
     if (authEnabled) {
       void get().save();
     }
   },
+  setLevelNumeric: (level: LevelNumeric) => {
+    set({ levelNumeric: level });
+    get().setRequiredXP(requiredXP(level));
+  },
+  setRequiredXP: (xp: number) => set({ requiredXp: xp }),
   awardXP: (gain: number) => {
-    const prevLevel = get().levelNumeric;
-    set((state: CareerState) => ({
+    set((state) => ({
       xp: state.xp + gain,
       history: [...state.history, gain],
     }));
-    get().maybeLevelUp();
+    const leveledUp = get().maybeLevelUp();
     if (authEnabled) {
       void get().save();
     }
-    return get().levelNumeric > prevLevel;
+    return leveledUp;
   },
-  maybeLevelUp: () =>
-    set((state: CareerState) => {
+  maybeLevelUp: () => {
+    let leveledUp = false;
+    set((state) => {
       let { xp, levelNumeric } = state;
       let requiredXp = state.requiredXp;
       while (xp >= requiredXp) {
         xp -= requiredXp;
         levelNumeric = (levelNumeric + 1) as LevelNumeric;
         requiredXp = requiredXP(levelNumeric);
+        leveledUp = true;
       }
       return { xp, levelNumeric, requiredXp };
-    }),
+    });
+    return leveledUp;
+  },
   load: async () => {
     if (!authEnabled) return;
     const res = await fetch('/api/profile');
