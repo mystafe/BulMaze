@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diacriticInsensitiveEquals } from './utils';
+import { diacriticInsensitiveEquals } from './scoring';
 
 describe('diacriticInsensitiveEquals', () => {
   it('matches regardless of diacritics and case', () => {

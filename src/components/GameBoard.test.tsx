@@ -26,6 +26,7 @@ const mockGameState = {
   takeLetter: vi.fn(),
   makeGuess: vi.fn(),
   setWordItem: vi.fn(),
+  reset: vi.fn(),
 };
 
 const mockCareerState = {

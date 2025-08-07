@@ -6,9 +6,10 @@ export interface WordResultCardProps {
   example: string;
   translation: string;
   onNext: () => void;
+  loading?: boolean;
 }
 
-export default function WordResultCard({ word, example, translation, onNext }: WordResultCardProps) {
+export default function WordResultCard({ word, example, translation, onNext, loading }: WordResultCardProps) {
   return (
     <Card className="rounded-2xl shadow-md">
       <CardHeader>
@@ -19,7 +20,7 @@ export default function WordResultCard({ word, example, translation, onNext }: W
         <p className="text-sm text-muted-foreground">{translation}</p>
       </CardContent>
       <CardFooter className="justify-end">
-        <Button onClick={onNext} aria-label="Next word">
+        <Button onClick={onNext} aria-label="Next word" disabled={loading}>
           Next
         </Button>
       </CardFooter>

@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react';
 import PlacementWizard from '@/components/PlacementWizard';
 import AuthButtons from '@/components/AuthButtons';
 import GameBoard from '@/components/GameBoard';
-import ConfettiCelebration from '@/components/ConfettiCelebration';
 import { Button } from '@/components/ui/button';
 import { useCareerStore } from '@/lib/store';
 
@@ -20,7 +19,6 @@ export default function CareerPage() {
   const cefr = useCareerStore((s) => s.cefr);
 
   const router = useRouter();
-  const [celebrate, setCelebrate] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#dashboard') {
@@ -29,10 +27,7 @@ export default function CareerPage() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const cel = params.get('celebrate') === '1';
-    setCelebrate(cel);
-    if (cel) {
+    if (new URLSearchParams(window.location.search).get('celebrate') === '1') {
       router.replace('/career#dashboard');
     }
   }, [router]);
@@ -58,7 +53,6 @@ export default function CareerPage() {
   if (showDashboard) {
     return (
       <div className="space-y-4" id="dashboard">
-        {celebrate && <ConfettiCelebration />}
         <h1 className="text-2xl font-bold">Career Dashboard</h1>
         <p>Your level: {cefr}</p>
         <Button onClick={() => setGameStarted(true)}>Start Career Game</Button>

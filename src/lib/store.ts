@@ -1,8 +1,11 @@
 import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
-import { calcPoints, revealRandomLetter } from './scoring';
-import { diacriticInsensitiveEquals } from './utils';
+import {
+  calcPoints,
+  revealRandomLetter,
+  diacriticInsensitiveEquals,
+} from './scoring';
 
 const authEnabled = process.env.FEATURE_AUTH === 'true';
 
@@ -113,8 +116,16 @@ export const useGameStore = create<GameState & GameActions>()(
       storage: createJSONStorage(() => localStorage, {
         replacer: (_key, value) =>
           value instanceof Set ? Array.from(value) : value,
-        reviver: (key, value) =>
-          key === 'revealed' ? new Set<string>(value as string[]) : value,
+        reviver: (key, value) => {
+          if (key === 'revealed') {
+            if (value instanceof Set) return value as Set<string>;
+            if (Array.isArray(value)) return new Set<string>(value);
+            if (value && typeof value === 'object')
+              return new Set<string>(Array.from(value as Iterable<string>));
+            return new Set<string>();
+          }
+          return value;
+        },
       }),
     },
   ),
@@ -130,7 +141,7 @@ export interface CareerState {
 
 export interface CareerActions {
   setCEFR: (cefr: CEFR) => void;
-  awardXP: (gain: number) => void;
+  awardXP: (gain: number) => boolean;
   maybeLevelUp: () => void;
   load: () => Promise<void>;
   save: () => Promise<void>;
@@ -154,6 +165,7 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
     }
   },
   awardXP: (gain: number) => {
+    const prevLevel = get().levelNumeric;
     set((state: CareerState) => ({
       xp: state.xp + gain,
       history: [...state.history, gain],
@@ -162,6 +174,7 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
     if (authEnabled) {
       void get().save();
     }
+    return get().levelNumeric > prevLevel;
   },
   maybeLevelUp: () =>
     set((state: CareerState) => {
