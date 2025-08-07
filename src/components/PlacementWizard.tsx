@@ -15,7 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUiStore, useCareerStore } from '@/lib/store';
 import { cefrToNumeric, requiredXP, type CEFR } from '@/lib/levels';
-import { fetchJson } from '@/lib/fetchJson';
+import { postJSON } from '@/lib/postJson';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import '@/lib/i18nClient';
@@ -47,18 +47,17 @@ export default function PlacementWizard() {
   const start = async () => {
     setLoading(true);
     try {
-      const data = await fetchJson<{ items: Question[] }>('/api/ai/placement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uiLang }),
-      });
+      const data = await postJSON<{ items: Question[] }>(
+        '/api/ai/placement',
+        { uiLang },
+      );
       const list = data.items.slice(0, 10);
       setItems(list);
       setAnswers({});
       setIndex(0);
       setPhase('test');
     } catch {
-      // error handled in fetchJson
+      // error handled in postJSON
     } finally {
       setLoading(false);
     }
@@ -84,13 +83,9 @@ export default function PlacementWizard() {
     setPhase('result');
     const payload = items.map((q) => ({ id: q.id, answer: answers[q.id] || '' }));
     try {
-      const { cefr } = await fetchJson<{ cefr: CEFR }>(
+      const { cefr } = await postJSON<{ cefr: CEFR }>(
         '/api/ai/evaluate',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers: payload }),
-        },
+        { answers: payload },
       );
       const levelNumeric = cefrToNumeric(cefr);
       setCEFR(cefr);
@@ -103,7 +98,7 @@ export default function PlacementWizard() {
       window.dispatchEvent(new Event('bulmaze:placement-finished'));
       router.push(first ? '/career?celebrate=1#dashboard' : '/career#dashboard');
     } catch {
-      // error handled in fetchJson
+      // error handled in postJSON
     } finally {
       setSubmitting(false);
     }

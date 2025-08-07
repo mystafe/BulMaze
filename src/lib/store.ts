@@ -6,6 +6,7 @@ import {
   revealRandomLetter,
   diacriticInsensitiveEquals,
 } from './scoring';
+import { postJSON } from './postJson';
 
 const authEnabled = process.env.FEATURE_AUTH === 'true';
 
@@ -187,20 +188,29 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
   },
   load: async () => {
     if (!authEnabled) return;
-    const res = await fetch('/api/profile');
-    if (res.ok) {
-      const data: CareerState = await res.json();
+    try {
+      const data = await postJSON<CareerState>('/api/profile', undefined, {
+        method: 'GET',
+      });
       set(data);
+    } catch {
+      // error handled in postJSON
     }
   },
   save: async () => {
     if (!authEnabled) return;
     const { cefr, levelNumeric, xp, requiredXp, history } = get();
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cefr, levelNumeric, xp, requiredXp, history }),
-    });
+    try {
+      await postJSON('/api/profile', {
+        cefr,
+        levelNumeric,
+        xp,
+        requiredXp,
+        history,
+      });
+    } catch {
+      // error handled in postJSON
+    }
   },
 });
 

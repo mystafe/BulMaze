@@ -18,7 +18,7 @@ import {
   diacriticInsensitiveEquals,
   calcPoints,
 } from '@/lib/scoring';
-import { fetchJson } from '@/lib/fetchJson';
+import { postJSON } from '@/lib/postJson';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { motion, useAnimation } from 'framer-motion';
@@ -53,26 +53,21 @@ export default function GameBoard() {
     setLoading(true);
     setError(false);
     try {
-      const data = await fetchJson<WordItem>(
+      const data = await postJSON<WordItem>(
         '/api/ai/generate',
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetLang,
-            cefr,
-            uiLanguage: uiLang,
-          }),
+          targetLang,
+          cefr,
+          uiLanguage: uiLang,
         },
       );
       setWordItem(data);
     } catch {
       setError(true);
-      toast.error(t('fetchError'));
     } finally {
       setLoading(false);
     }
-  }, [targetLang, cefr, uiLang, setWordItem, t]);
+  }, [targetLang, cefr, uiLang, setWordItem]);
 
   useEffect(() => {
     if (!word) {
