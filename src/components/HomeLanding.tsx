@@ -1,5 +1,6 @@
+"use client";
+
 // Landing section showcasing BulMaze branding on the home page with onboarding flow.
-'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
