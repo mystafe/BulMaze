@@ -1,9 +1,5 @@
-import QuickGame from '@/components/QuickGame';
+import GamePage from '@/components/GamePage';
 
 export default function QuickPage() {
-  return (
-    <div className="max-w-xl mx-auto">
-      <QuickGame />
-    </div>
-  );
+  return <GamePage />;
 }
