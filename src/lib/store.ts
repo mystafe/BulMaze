@@ -8,6 +8,7 @@ import {
   diacriticInsensitiveEquals,
 } from './scoring';
 import { postJSON } from './postJson';
+import { initCard, type CardState } from './spacedRepetition';
 
 const authEnabled = process.env.FEATURE_AUTH === 'true';
 let revealedSetWarned = false;
@@ -141,6 +142,44 @@ export const useGameStore = create<GameState & GameActions>()(
         }
         return state;
       },
+    },
+  ),
+);
+
+export interface CardsState {
+  cards: Record<string, CardState>;
+  queue: string[];
+}
+
+export interface CardsActions {
+  addWord(word: WordItem): void;
+  loadQueue(): void;
+}
+
+export const useCardsStore = create<CardsState & CardsActions>()(
+  persist(
+    (set, get) => ({
+      cards: {},
+      queue: [],
+      addWord: (word: WordItem) =>
+        set((state) => ({
+          cards: { ...state.cards, [word.word]: initCard() },
+        })),
+      loadQueue: () => {
+        const today = new Date();
+        const queue = Object.entries(get().cards)
+          .filter(([, card]) => new Date(card.due) <= today)
+          .sort(
+            (a, b) =>
+              new Date(a[1].due).getTime() - new Date(b[1].due).getTime(),
+          )
+          .map(([word]) => word);
+        set({ queue });
+      },
+    }),
+    {
+      name: 'cards',
+      storage: createJSONStorage(() => localStorage),
     },
   ),
 );
