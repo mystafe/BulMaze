@@ -6,7 +6,7 @@ export default {
     locales: ['en', 'tr', 'de', 'es', 'it', 'pt'],
   },
   defaultNS: 'common',
-  ns: ['common', 'game', 'career'],
+  ns: ['common', 'trainer'],
   fallbackLng: 'en',
   localePath: path.resolve('./src/locales'),
 };
