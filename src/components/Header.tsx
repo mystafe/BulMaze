@@ -1,3 +1,5 @@
+"use client";
+
 // Global application header with BulMaze branding and navigation.
 import Link from 'next/link';
 import Image from 'next/image';
