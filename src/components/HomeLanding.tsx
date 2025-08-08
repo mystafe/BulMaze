@@ -1,18 +1,23 @@
+// Landing section showcasing BulMaze branding on the home page.
 'use client';
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HomeLanding() {
   return (
     <section className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-      <motion.h1
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+        className="flex items-center gap-4"
       >
-        BulMaze
-      </motion.h1>
+        <Image src="/logo.svg" alt="BulMaze logo" width={80} height={80} />
+        <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-[var(--bm-primary)] to-[var(--bm-secondary)] bg-clip-text text-transparent">
+          BulMaze
+        </h1>
+      </motion.div>
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -29,14 +34,16 @@ export default function HomeLanding() {
       >
         <Link
           href="/quick"
-          className="px-6 py-3 rounded-lg shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+          className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-primary)] hover:bg-teal-700 text-white flex items-center gap-2 transition-colors"
         >
+          <Image src="/icons/maze.svg" alt="Maze icon" width={20} height={20} />
           Hemen Oyna
         </Link>
         <Link
           href="/career"
-          className="px-6 py-3 rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+          className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-secondary)] hover:bg-amber-600 text-white flex items-center gap-2 transition-colors"
         >
+          <Image src="/icons/trophy.svg" alt="Trophy icon" width={20} height={20} />
           Kariyer Modu
         </Link>
       </motion.div>

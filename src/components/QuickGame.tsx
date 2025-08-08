@@ -1,5 +1,5 @@
+// QuickGame mini quiz component styled with BulMaze colors.
 'use client';
-// QuickGame modern React component
 
 import { useState, useReducer } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -81,7 +81,7 @@ export default function QuickGame({ questions = sampleQuestions }: QuickGameProp
         </p>
         <button
           onClick={() => dispatch({ type: 'reset' })}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-[var(--bm-primary)] text-white rounded-md shadow hover:bg-teal-700 transition-colors"
         >
           Restart
         </button>
@@ -99,7 +99,7 @@ export default function QuickGame({ questions = sampleQuestions }: QuickGameProp
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="bg-white shadow-lg rounded-lg p-6 space-y-6"
+          className="bg-[var(--bm-bg)] shadow-lg rounded-lg p-6 space-y-6 border-2 border-[var(--bm-primary)]"
         >
           <h2 className="text-xl font-medium">{currentQuestion.question}</h2>
           <div className="grid grid-cols-1 gap-4">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import 'tailwindcss/tailwind.css';
+import './theme.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
@@ -24,7 +25,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${geistSans.className} ${geistMono.className} antialiased bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100`}
+        className={`${geistSans.className} ${geistMono.className} antialiased bg-[var(--bm-bg)] text-[var(--bm-text)]`}
       >
         <Providers>
           <ConfettiCelebration />
