@@ -3,23 +3,22 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import QuickGame, { Question } from '../QuickGame';
 
-jest.mock('framer-motion', () => {
-  const React = require('react');
-  return {
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    motion: {
-      div: ({ children, initial, animate, exit, transition, ...props }: any) => (
-        <div {...props}>{children}</div>
-      ),
-      button: ({ children, initial, animate, exit, transition, ...props }: any) => (
-        <button {...props}>{children}</button>
-      ),
-      span: ({ children, initial, animate, exit, transition, ...props }: any) => (
-        <span {...props}>{children}</span>
-      ),
-    },
-  };
-});
+jest.mock('framer-motion', () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  motion: {
+    div: ({ children, ...rest }: { children: React.ReactNode } & Record<string, unknown>) => (
+      <div {...rest}>{children}</div>
+    ),
+    button: ({ children, ...rest }: { children: React.ReactNode } & Record<string, unknown>) => (
+      <button {...rest}>{children}</button>
+    ),
+    span: ({ children, ...rest }: { children: React.ReactNode } & Record<string, unknown>) => (
+      <span {...rest}>{children}</span>
+    ),
+  },
+}));
 
 jest.mock('lucide-react', () => ({
   CheckCircle: () => <span data-testid="check" />,
