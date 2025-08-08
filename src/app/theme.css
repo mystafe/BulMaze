@@ -1,0 +1,14 @@
+/* Brand theme variables for BulMaze */
+:root {
+  --bm-primary: #0d9488;
+  --bm-secondary: #f59e0b;
+  --bm-accent: #9333ea;
+  --bm-bg: #f8fafc;
+  --bm-text: #0f172a;
+}
+
+/* Dark theme overrides tied to the `dark` class */
+.dark {
+  --bm-bg: #0f172a;
+  --bm-text: #f8fafc;
+}
