@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Card,
   CardHeader,
@@ -16,7 +17,12 @@ export default function ModeCards() {
   const { t } = useTranslation('common');
   return (
     <div className="grid gap-6 sm:grid-cols-2">
-      <div className="transition-transform hover:-translate-y-1">
+      <motion.div
+        whileHover={{ y: -5 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Card className="rounded-2xl shadow-md">
           <CardHeader>
             <CardTitle>{t('mode.career.title')}</CardTitle>
@@ -30,8 +36,13 @@ export default function ModeCards() {
             </Button>
           </CardFooter>
         </Card>
-      </div>
-      <div className="transition-transform hover:-translate-y-1">
+      </motion.div>
+      <motion.div
+        whileHover={{ y: -5 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         <Card className="rounded-2xl shadow-md">
           <CardHeader>
             <CardTitle>{t('mode.quick.title')}</CardTitle>
@@ -45,7 +56,7 @@ export default function ModeCards() {
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 }
