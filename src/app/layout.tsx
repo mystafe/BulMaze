@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
+import PageTransition from '@/components/PageTransition';
 
 const geistSans = Geist({ subsets: ['latin'] });
 const geistMono = Geist_Mono({ subsets: ['latin'] });
@@ -28,7 +29,9 @@ export default function RootLayout({
         <Providers>
           <ConfettiCelebration />
           <Header />
-          <main className="container mx-auto p-4 min-h-screen">{children}</main>
+          <PageTransition>
+            <main className="container mx-auto p-4 min-h-screen">{children}</main>
+          </PageTransition>
           <Footer />
         </Providers>
       </body>

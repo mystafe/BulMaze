@@ -2,7 +2,7 @@
 // QuickGame modern React component
 
 import { useState, useReducer } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 export type Question = {
@@ -92,49 +92,62 @@ export default function QuickGame({ questions = sampleQuestions }: QuickGameProp
   return (
     <div className="max-w-md mx-auto p-6 space-y-4">
       <div className="text-right text-sm text-gray-500">Score: {state.score}</div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentQuestion.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white shadow-lg rounded-lg p-6 space-y-6"
+        >
+          <h2 className="text-xl font-medium">{currentQuestion.question}</h2>
+          <div className="grid grid-cols-1 gap-4">
+            {currentQuestion.options.map((opt) => {
+              const isCorrect = status !== 'idle' && opt === currentQuestion.answer;
+              const isWrong = status === 'wrong' && selected === opt;
 
-      <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-        <h2 className="text-xl font-medium">{currentQuestion.question}</h2>
-        <div className="grid grid-cols-1 gap-4">
-          {currentQuestion.options.map((opt) => {
-            const isCorrect = status !== 'idle' && opt === currentQuestion.answer;
-            const isWrong = status === 'wrong' && selected === opt;
-
-            return (
-              <button
-                key={opt}
-                onClick={() => handleAnswer(opt)}
-                disabled={status !== 'idle'}
-                className={`relative px-4 py-2 border rounded-md text-left transition-colors shadow
-                  hover:bg-gray-50 focus:outline-none disabled:opacity-75
-                  ${isCorrect ? 'bg-green-100' : ''}
-                  ${isWrong ? 'bg-red-100' : ''}
-                `}
-              >
-                {opt}
-                {isCorrect && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-2 right-2 text-green-500"
-                  >
-                    <CheckCircle size={20} />
-                  </motion.span>
-                )}
-                {isWrong && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-2 right-2 text-red-500"
-                  >
-                    <XCircle size={20} />
-                  </motion.span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              return (
+                <motion.button
+                  key={opt}
+                  onClick={() => handleAnswer(opt)}
+                  disabled={status !== 'idle'}
+                  initial={false}
+                  animate={
+                    isCorrect
+                      ? { backgroundColor: '#d1fae5', scale: 1.05 }
+                      : isWrong
+                      ? { backgroundColor: '#fee2e2', x: [0, -8, 8, -8, 8, 0] }
+                      : { backgroundColor: '#ffffff', scale: 1, x: 0 }
+                  }
+                  transition={{ duration: 0.3 }}
+                  className="relative px-4 py-2 border rounded-md text-left shadow hover:bg-gray-50 focus:outline-none disabled:opacity-75"
+                >
+                  {opt}
+                  {isCorrect && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-2 right-2 text-green-500"
+                    >
+                      <CheckCircle size={20} />
+                    </motion.span>
+                  )}
+                  {isWrong && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-2 right-2 text-red-500"
+                    >
+                      <XCircle size={20} />
+                    </motion.span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
