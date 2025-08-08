@@ -84,9 +84,9 @@ beforeEach(() => {
 describe('GameBoard', () => {
   it('shows result, resets and fetches next word on next', async () => {
     render(<GameBoard />);
-    const input = screen.getAllByPlaceholderText('Your guess')[0];
+    const input = (await screen.findAllByPlaceholderText('Your guess'))[0];
     fireEvent.change(input, { target: { value: 'test' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Guess' })[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Guess' }))[0]);
 
     expect(screen.getByTestId('word-result')).toBeDefined();
 
@@ -98,12 +98,12 @@ describe('GameBoard', () => {
     });
   });
 
-  it('reduces points to 90 when taking a letter', () => {
+  it('reduces points to 90 when taking a letter', async () => {
     mockGameState.revealed = new Set();
     mockGameState.points = 100;
     mockGameState.lettersTaken = 0;
     render(<GameBoard />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Letter' })[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Letter' }))[0]);
 
     expect(mockGameState.points).toBe(90);
     expect(mockGameState.lettersTaken).toBe(1);
