@@ -4,11 +4,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
 import AuthButtons from './AuthButtons';
 
 export default function Header() {
+  const { t } = useTranslation('common');
   const [showMore, setShowMore] = useState(false);
 
   return (
@@ -22,16 +24,16 @@ export default function Header() {
       </Link>
       <nav className="flex items-center gap-2">
         <Button asChild variant="ghost">
-          <Link href="/trainer">Learn</Link>
+          <Link href="/trainer">{t('nav.learn')}</Link>
         </Button>
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
-          <Link href="/vocabulary">Vocabulary</Link>
+          <Link href="/vocabulary">{t('nav.vocabulary')}</Link>
         </Button>
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
-          <Link href="/career">Career</Link>
+          <Link href="/career">{t('nav.career')}</Link>
         </Button>
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
-          <Link href="/progress">Progress</Link>
+          <Link href="/progress">{t('nav.progress')}</Link>
         </Button>
         <div className="relative sm:hidden">
           <Button variant="ghost" onClick={() => setShowMore(!showMore)}>
@@ -44,34 +46,34 @@ export default function Header() {
                 variant="ghost"
                 onClick={() => setShowMore(false)}
               >
-                <Link href="/vocabulary">Vocabulary</Link>
+                <Link href="/vocabulary">{t('nav.vocabulary')}</Link>
               </Button>
               <Button
                 asChild
                 variant="ghost"
                 onClick={() => setShowMore(false)}
               >
-                <Link href="/career">Career</Link>
+                <Link href="/career">{t('nav.career')}</Link>
               </Button>
               <Button
                 asChild
                 variant="ghost"
                 onClick={() => setShowMore(false)}
               >
-                <Link href="/progress">Progress</Link>
+                <Link href="/progress">{t('nav.progress')}</Link>
               </Button>
               <Button
                 asChild
                 variant="ghost"
                 onClick={() => setShowMore(false)}
               >
-                <Link href="/settings">Settings</Link>
+                <Link href="/settings">{t('nav.settings')}</Link>
               </Button>
             </div>
           )}
         </div>
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
-          <Link href="/settings">Settings</Link>
+          <Link href="/settings">{t('nav.settings')}</Link>
         </Button>
         <AuthButtons />
         <ThemeToggle />

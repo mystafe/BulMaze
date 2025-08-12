@@ -1,13 +1,18 @@
 {
-  "title": "BulMaze",
+  "title": "WordMaster",
   "nav": {
-    "quick": "Schnell",
+    "learn": "Lernen",
+    "vocabulary": "Vokabular",
     "career": "Karriere",
-    "profile": "Profil",
+    "progress": "Fortschritt",
     "settings": "Einstellungen"
   },
   "footer": {
     "developed": "Entwickelt von Mustafa Evleksiz"
+  },
+  "language": {
+    "changed": "Sprache geändert",
+    "changedDesc": "Die Benutzeroberflächensprache wurde zu {{lang}} geändert"
   },
   "mode": {
     "career": {

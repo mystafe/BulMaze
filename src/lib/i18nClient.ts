@@ -8,16 +8,20 @@ if (!i18n.isInitialized) {
   i18n
     .use(initReactI18next)
     .use(
-      resourcesToBackend((lng: string, ns: string) =>
-        import(`../locales/${lng}/${ns}.json`),
+      resourcesToBackend(
+        (lng: string, ns: string) => import(`../locales/${lng}/${ns}.json`),
       ),
     )
     .init({
       ...nextI18NextConfig,
-      lng: 'en',
+      lng:
+        typeof window !== 'undefined'
+          ? localStorage.getItem('ui')
+            ? JSON.parse(localStorage.getItem('ui')!).state.uiLang
+            : 'en'
+          : 'en',
       interpolation: { escapeValue: false },
     });
 }
 
 export default i18n;
-

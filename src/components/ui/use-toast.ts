@@ -15,6 +15,7 @@ type ToasterToast = ToastProps & {
   action?: React.ReactElement;
   open?: boolean;
   onOpenChange?: (_open: boolean) => void;
+  duration?: number;
 };
 
 const TOAST_LIMIT = 5;
@@ -144,6 +145,13 @@ function toast(props: Toast) {
       },
     },
   });
+
+  // Auto-dismiss after duration if specified
+  if (props.duration && props.duration > 0) {
+    setTimeout(() => {
+      dismiss();
+    }, props.duration);
+  }
 
   return {
     id: id,

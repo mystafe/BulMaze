@@ -50,8 +50,10 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    void i18n.changeLanguage(uiLang);
-    document.documentElement.lang = uiLang;
+    if (uiLang && uiLang !== i18n.language) {
+      void i18n.changeLanguage(uiLang);
+      document.documentElement.lang = uiLang;
+    }
   }, [uiLang]);
 
   useEffect(() => {

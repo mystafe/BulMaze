@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ interface DemoUser {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation('common');
   const { data: session, status } = useSession();
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
@@ -68,18 +70,18 @@ export default function SettingsPage() {
   const handleRefreshQuest = async () => {
     if (userLevel !== 'Not determined') {
       toast({
-        title: 'Refreshing Quest...',
-        description: 'Fetching new words from our AI.',
+        title: t('settings.refreshingQuest'),
+        description: t('settings.fetchingWords'),
       });
       await fetchQuest(userLevel as 'beginner' | 'intermediate' | 'advanced');
       toast({
-        title: 'Quest Refreshed!',
-        description: 'Your new daily quest is ready.',
+        title: t('settings.questRefreshed'),
+        description: t('settings.newQuestReady'),
       });
     } else {
       toast({
-        title: 'Cannot Refresh Quest',
-        description: 'Please complete the level assessment first.',
+        title: t('settings.cannotRefreshQuest'),
+        description: t('settings.completeAssessmentFirst'),
         variant: 'destructive',
       });
     }
@@ -88,9 +90,9 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto py-8">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4">Settings</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('settings.title')}</h1>
         <p className="text-lg text-gray-600 dark:text-gray-300">
-          Customize your learning experience and manage your account
+          {t('settings.description')}
         </p>
       </div>
 
@@ -100,14 +102,14 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">👤</span>
-              Account Settings
+              {t('settings.accountSettings')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                <span>Loading account information...</span>
+                <span>{t('settings.loadingAccountInfo')}</span>
               </div>
             ) : currentUser ? (
               <div className="space-y-4">
@@ -136,7 +138,9 @@ export default function SettingsPage() {
                     </h3>
                     <p className="text-gray-600">{currentUser.email}</p>
                     <Badge variant="secondary" className="mt-2">
-                      {isDemoMode ? 'Demo Mode' : 'Authenticated'}
+                      {isDemoMode
+                        ? t('settings.demoMode')
+                        : t('settings.authenticated')}
                     </Badge>
                   </div>
                 </div>
@@ -149,14 +153,14 @@ export default function SettingsPage() {
                         : () => (window.location.href = '/api/auth/signout')
                     }
                   >
-                    Sign Out
+                    {t('settings.signOut')}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-4">
                 <p className="text-gray-600 mb-4">
-                  Sign in to access your account settings
+                  {t('settings.signInToAccess')}
                 </p>
                 <div className="flex gap-2 justify-center">
                   {hasGoogleAuth && (
@@ -169,16 +173,16 @@ export default function SettingsPage() {
                         )}`;
                       }}
                     >
-                      Sign In with Google
+                      {t('settings.signInWithGoogle')}
                     </Button>
                   )}
                   <Button variant="outline" onClick={handleDemoSignIn}>
-                    Try Demo Mode
+                    {t('settings.tryDemoMode')}
                   </Button>
                 </div>
                 {!hasGoogleAuth && (
                   <p className="text-xs text-gray-500 mt-2">
-                    Google OAuth not configured. Using demo mode.
+                    {t('settings.googleOAuthNotConfigured')}
                   </p>
                 )}
               </div>
@@ -191,20 +195,20 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">🎯</span>
-              Learning Preferences
+              {t('settings.learningPreferences')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold mb-2">Language</h3>
+              <h3 className="font-semibold mb-2">{t('settings.language')}</h3>
               <LanguageSelector />
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Theme</h3>
+              <h3 className="font-semibold mb-2">{t('settings.theme')}</h3>
               <ThemeToggle />
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Your Level</h3>
+              <h3 className="font-semibold mb-2">{t('settings.yourLevel')}</h3>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{userLevel}</Badge>
                 <Button
@@ -212,7 +216,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={() => (window.location.href = '/career')}
                 >
-                  Retake Assessment
+                  {t('settings.retakeAssessment')}
                 </Button>
               </div>
             </div>
@@ -224,41 +228,47 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">🔔</span>
-              Notifications
+              {t('settings.notifications')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Daily Reminders</h3>
+                <h3 className="font-semibold">
+                  {t('settings.dailyReminders')}
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Get reminded to study daily
+                  {t('settings.dailyRemindersDesc')}
                 </p>
               </div>
               <Button variant="outline" size="sm">
-                Enable
+                {t('settings.enable')}
               </Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Progress Updates</h3>
+                <h3 className="font-semibold">
+                  {t('settings.progressUpdates')}
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Receive updates on your learning progress
+                  {t('settings.progressUpdatesDesc')}
                 </p>
               </div>
               <Button variant="outline" size="sm">
-                Enable
+                {t('settings.enable')}
               </Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Achievement Notifications</h3>
+                <h3 className="font-semibold">
+                  {t('settings.achievementNotifications')}
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Get notified when you unlock achievements
+                  {t('settings.achievementNotificationsDesc')}
                 </p>
               </div>
               <Button variant="outline" size="sm">
-                Enable
+                {t('settings.enable')}
               </Button>
             </div>
           </CardContent>
@@ -269,15 +279,17 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">🔒</span>
-              Data & Privacy
+              {t('settings.dataPrivacy')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Refresh Daily Quest</h3>
+                <h3 className="font-semibold">
+                  {t('settings.refreshDailyQuest')}
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Get a new set of words for today's quest.
+                  {t('settings.refreshDailyQuestDesc')}
                 </p>
               </div>
               <Button
@@ -286,25 +298,27 @@ export default function SettingsPage() {
                 onClick={handleRefreshQuest}
                 disabled={isQuestLoading}
               >
-                {isQuestLoading ? 'Refreshing...' : 'Refresh'}
+                {isQuestLoading
+                  ? t('settings.refreshing')
+                  : t('settings.refresh')}
               </Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Export Data</h3>
+                <h3 className="font-semibold">{t('settings.exportData')}</h3>
                 <p className="text-sm text-gray-600">
-                  Download your learning data
+                  {t('settings.exportDataDesc')}
                 </p>
               </div>
               <Button variant="outline" size="sm">
-                Export
+                {t('settings.export')}
               </Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Delete Account</h3>
+                <h3 className="font-semibold">{t('settings.deleteAccount')}</h3>
                 <p className="text-sm text-gray-600">
-                  Permanently delete all your account data.
+                  {t('settings.deleteAccountDesc')}
                 </p>
               </div>
               <Button
@@ -312,7 +326,7 @@ export default function SettingsPage() {
                 size="sm"
                 className="text-red-600 border-red-600 hover:bg-red-50"
               >
-                Delete
+                {t('settings.delete')}
               </Button>
             </div>
           </CardContent>
@@ -323,19 +337,14 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">ℹ️</span>
-              About WordMaster
+              {t('settings.about')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">Version: 1.0.0</p>
-              <p className="text-sm text-gray-600">
-                Built with Next.js, TypeScript, and Tailwind CSS
-              </p>
-              <p className="text-sm text-gray-600">
-                © 2024 WordMaster - Master English vocabulary through
-                interactive learning
-              </p>
+              <p className="text-sm text-gray-600">{t('settings.version')}</p>
+              <p className="text-sm text-gray-600">{t('settings.builtWith')}</p>
+              <p className="text-sm text-gray-600">{t('settings.copyright')}</p>
             </div>
           </CardContent>
         </Card>
