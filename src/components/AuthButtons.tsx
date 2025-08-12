@@ -6,10 +6,16 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
+interface DemoUser {
+  name: string;
+  email: string;
+  image: string | null;
+}
+
 export default function AuthButtons() {
   const { data: session, status } = useSession();
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoUser, setDemoUser] = useState<any>(null);
+  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [hasGoogleAuth, setHasGoogleAuth] = useState(false);
   const { toast } = useToast();
   const prevStatus = useRef(status);

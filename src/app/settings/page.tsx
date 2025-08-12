@@ -11,10 +11,16 @@ import Image from 'next/image';
 import { useDailyQuestStore } from '@/lib/store';
 import { useToast } from '@/components/ui/use-toast';
 
+interface DemoUser {
+  name: string;
+  email: string;
+  image: string | null;
+}
+
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoUser, setDemoUser] = useState<any>(null);
+  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [hasGoogleAuth, setHasGoogleAuth] = useState(false);
   const [userLevel, setUserLevel] = useState('Not determined');
   const { fetchQuest, isLoading: isQuestLoading } = useDailyQuestStore();

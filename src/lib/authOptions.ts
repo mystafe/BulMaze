@@ -22,8 +22,8 @@ if (hasGoogleAuth) {
 if (hasAppleAuth) {
   providers.push(
     AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID,
-      clientSecret: process.env.APPLE_CLIENT_SECRET, // Note: This expects the private key content
+      clientId: process.env.APPLE_CLIENT_ID!,
+      clientSecret: process.env.APPLE_CLIENT_SECRET!, // Note: This expects the private key content
     }),
   );
 }

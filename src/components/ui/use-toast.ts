@@ -3,20 +3,22 @@
 
 import * as React from 'react';
 
+type ToastProps = {
+  // Define custom props for your toast here if needed
+  variant?: 'default' | 'destructive';
+};
+
 type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactElement;
+  open?: boolean;
+  onOpenChange?: (_open: boolean) => void;
 };
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 1000000;
-
-type ToastProps = {
-  // Define custom props for your toast here if needed
-  variant?: 'default' | 'destructive';
-};
 
 type State = {
   toasts: ToasterToast[];
@@ -108,7 +110,7 @@ export const reducer = (state: State, action: Action): State => {
   }
 };
 
-const listeners: Array<(state: State) => void> = [];
+const listeners: Array<(_state: State) => void> = [];
 
 let memoryState: State = { toasts: [] };
 
@@ -151,7 +153,7 @@ function toast(props: Toast) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState);
+  const [, setState] = React.useState<State>(memoryState);
 
   React.useEffect(() => {
     listeners.push(setState);
@@ -161,10 +163,10 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
-    ...state,
+    toasts: memoryState.toasts,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: 'DISMISS_TOAST', toastId }),
   };

@@ -242,7 +242,7 @@ export default function VocabularyPage() {
               />
               <Select
                 value={newWord.difficulty}
-                onValueChange={(value: any) =>
+                onValueChange={(value: string) =>
                   setNewWord((prev) => ({ ...prev, difficulty: value }))
                 }
               >

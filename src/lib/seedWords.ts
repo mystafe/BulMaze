@@ -1,4 +1,5 @@
-import { useCardsStore, type WordItem } from './store';
+import { useCardsStore } from './store';
+import { type WordItem } from './schemas';
 
 const WORDS_URL = 'https://raw.githubusercontent.com/first20hours/google-10000-english/master/20k.txt';
 

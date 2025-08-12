@@ -3,7 +3,9 @@ import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { WordItem } from './schemas'; // Using the centralized schema
 import { postJSON } from './postJson';
-import { useUiStore } from './store'; // Assuming uiStore is defined in the same file or imported
+
+// Check if authentication is enabled
+const authEnabled = process.env.FEATURE_AUTH === 'true';
 
 // --- Daily Quest Store ---
 export interface DailyQuestState {
@@ -34,10 +36,8 @@ const dailyQuestStore: StateCreator<DailyQuestState & DailyQuestActions> = (
   fetchQuest: async (level) => {
     set({ isLoading: true, error: null });
     try {
-      const { uiLang } = useUiStore.getState();
       const questData = await postJSON<WordItem[]>('/api/ai/generate', {
         level,
-        uiLanguage: uiLang,
         count: 10,
       });
 
@@ -93,6 +93,13 @@ export const useUiStore = create<UIState & UIActions>()(
 );
 
 // --- Cards Store (for spaced repetition) ---
+export interface CardState {
+  due: string;
+  interval: number;
+  repetitions: number;
+  easeFactor: number;
+}
+
 export interface CardsState {
   cards: Record<string, CardState>;
   queue: string[];
@@ -102,6 +109,13 @@ export interface CardsActions {
   addWord(word: WordItem): void;
   loadQueue(): void;
 }
+
+const initCard = (): CardState => ({
+  due: new Date().toISOString(),
+  interval: 0,
+  repetitions: 0,
+  easeFactor: 2.5,
+});
 
 export const useCardsStore = create<CardsState & CardsActions>()(
   persist(
@@ -132,6 +146,25 @@ export const useCardsStore = create<CardsState & CardsActions>()(
 );
 
 // --- Career Store (simplified for now) ---
+export type CEFR = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+export type LevelNumeric = 1 | 2 | 3 | 4 | 5 | 6;
+
+const requiredXP = (level: LevelNumeric): number => {
+  return 200 + (level - 1) * 150;
+};
+
+const cefrToNumeric = (cefr: CEFR): LevelNumeric => {
+  const map: Record<CEFR, LevelNumeric> = {
+    A1: 1,
+    A2: 2,
+    B1: 3,
+    B2: 4,
+    C1: 5,
+    C2: 6,
+  };
+  return map[cefr];
+};
+
 export interface CareerState {
   cefr: CEFR;
   levelNumeric: LevelNumeric;
@@ -169,10 +202,8 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
   },
   setRequiredXP: (xp: number) => set({ requiredXp: xp }),
   awardXP: (gain: number) => {
-    set((state) => ({
-      xp: state.xp + gain,
-      history: [...state.history, gain],
-    }));
+    const newXP = get().xp + gain;
+    set({ xp: newXP });
     const leveledUp = get().maybeLevelUp();
     if (authEnabled) {
       void get().save();
@@ -180,44 +211,42 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
     return leveledUp;
   },
   maybeLevelUp: () => {
-    let leveledUp = false;
-    set((state) => {
-      let { xp, levelNumeric } = state;
-      let requiredXp = state.requiredXp;
-      while (xp >= requiredXp) {
-        xp -= requiredXp;
-        levelNumeric = (levelNumeric + 1) as LevelNumeric;
-        requiredXp = requiredXP(levelNumeric);
-        leveledUp = true;
-      }
-      return { xp, levelNumeric, requiredXp };
-    });
-    return leveledUp;
+    const { xp, requiredXp, levelNumeric } = get();
+    if (xp >= requiredXp && levelNumeric < 6) {
+      const newLevel = (levelNumeric + 1) as LevelNumeric;
+      set({
+        levelNumeric: newLevel,
+        requiredXp: requiredXP(newLevel),
+        history: [...get().history, xp],
+      });
+      return true;
+    }
+    return false;
   },
   load: async () => {
-    if (!authEnabled) return;
-    try {
-      const data = await postJSON<CareerState>('/api/profile', undefined, {
-        method: 'GET',
-      });
-      set(data);
-    } catch {
-      // error handled in postJSON
+    if (authEnabled) {
+      try {
+        const response = await fetch('/api/profile');
+        if (response.ok) {
+          const data = await response.json();
+          set(data);
+        }
+      } catch (error) {
+        console.error('Failed to load career data:', error);
+      }
     }
   },
   save: async () => {
-    if (!authEnabled) return;
-    const { cefr, levelNumeric, xp, requiredXp, history } = get();
-    try {
-      await postJSON('/api/profile', {
-        cefr,
-        levelNumeric,
-        xp,
-        requiredXp,
-        history,
-      });
-    } catch {
-      // error handled in postJSON
+    if (authEnabled) {
+      try {
+        await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(get()),
+        });
+      } catch (error) {
+        console.error('Failed to save career data:', error);
+      }
     }
   },
 });
@@ -225,7 +254,8 @@ const careerStore: StateCreator<CareerState & CareerActions> = (set, get) => ({
 export const useCareerStore = create<CareerState & CareerActions>()(
   (authEnabled
     ? careerStore
-    : persist(careerStore, { name: 'career' })) as StateCreator<
-    CareerState & CareerActions
-  >,
+    : persist(careerStore, {
+        name: 'career',
+        storage: createJSONStorage(() => localStorage),
+      })) as StateCreator<CareerState & CareerActions>,
 );
