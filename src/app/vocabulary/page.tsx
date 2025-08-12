@@ -78,11 +78,13 @@ export default function VocabularyPage() {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newWord, setNewWord] = useState({
+  const [newWord, setNewWord] = useState<
+    Omit<VocabularyWord, 'id' | 'mastered'>
+  >({
     word: '',
     definition: '',
     example: '',
-    difficulty: 'intermediate' as const,
+    difficulty: 'intermediate',
     category: '',
   });
 
@@ -242,9 +244,9 @@ export default function VocabularyPage() {
               />
               <Select
                 value={newWord.difficulty}
-                onValueChange={(value: string) =>
-                  setNewWord((prev) => ({ ...prev, difficulty: value }))
-                }
+                onValueChange={(
+                  value: 'beginner' | 'intermediate' | 'advanced',
+                ) => setNewWord((prev) => ({ ...prev, difficulty: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />

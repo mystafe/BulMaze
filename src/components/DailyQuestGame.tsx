@@ -45,9 +45,9 @@ export default function DailyQuestGame({
       setCurrentIndex((prev) => prev + 1);
     } else {
       setIsFinished(true);
-      onQuestComplete(
-        correctAnswers + (selectedAnswer === currentWord.word ? 1 : 0),
-      );
+      const finalScore =
+        correctAnswers + (selectedAnswer === currentWord.word ? 1 : 0);
+      onQuestComplete(finalScore);
     }
   };
 

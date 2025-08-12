@@ -22,7 +22,7 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Feeling or showing pleasure or contentment',
     options: ['happy', 'sad', 'angry', 'tired'],
     correctAnswer: 'happy',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '2',
@@ -30,7 +30,7 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Of considerable size or extent',
     options: ['big', 'small', 'tiny', 'huge'],
     correctAnswer: 'big',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '3',
@@ -38,7 +38,7 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Moving or capable of moving at high speed',
     options: ['fast', 'slow', 'quick', 'rapid'],
     correctAnswer: 'fast',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   // Intermediate questions
   {
@@ -47,15 +47,16 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Fluent or persuasive in speaking or writing',
     options: ['eloquent', 'silent', 'quiet', 'mute'],
     correctAnswer: 'eloquent',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '5',
     word: 'resilient',
-    definition: 'Able to withstand or recover quickly from difficult conditions',
+    definition:
+      'Able to withstand or recover quickly from difficult conditions',
     options: ['resilient', 'fragile', 'weak', 'delicate'],
     correctAnswer: 'resilient',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '6',
@@ -63,16 +64,17 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Present, appearing, or found everywhere',
     options: ['ubiquitous', 'rare', 'scarce', 'limited'],
     correctAnswer: 'ubiquitous',
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   // Advanced questions
   {
     id: '7',
     word: 'serendipity',
-    definition: 'The occurrence and development of events by chance in a happy or beneficial way',
+    definition:
+      'The occurrence and development of events by chance in a happy or beneficial way',
     options: ['serendipity', 'coincidence', 'destiny', 'fate'],
     correctAnswer: 'serendipity',
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: '8',
@@ -80,15 +82,16 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Lasting for a very short time; transitory',
     options: ['ephemeral', 'permanent', 'eternal', 'lasting'],
     correctAnswer: 'ephemeral',
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: '9',
     word: 'pragmatic',
-    definition: 'Dealing with things sensibly and realistically in a way that is based on practical rather than idealistic considerations',
+    definition:
+      'Dealing with things sensibly and realistically in a way that is based on practical rather than idealistic considerations',
     options: ['pragmatic', 'idealistic', 'romantic', 'dreamy'],
     correctAnswer: 'pragmatic',
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: '10',
@@ -96,8 +99,8 @@ const assessmentQuestions: AssessmentQuestion[] = [
     definition: 'Showing great attention to detail; very careful and precise',
     options: ['meticulous', 'careless', 'sloppy', 'hasty'],
     correctAnswer: 'meticulous',
-    difficulty: 'advanced'
-  }
+    difficulty: 'advanced',
+  },
 ];
 
 interface AssessmentResult {
@@ -121,15 +124,16 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
   const [scores, setScores] = useState({
     beginner: 0,
     intermediate: 0,
-    advanced: 0
+    advanced: 0,
   });
 
   const currentQuestion = assessmentQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / assessmentQuestions.length) * 100;
+  const progress =
+    ((currentQuestionIndex + 1) / assessmentQuestions.length) * 100;
 
   const handleAnswerSelect = (answer: string) => {
     if (selectedAnswer || showResult) return;
-    
+
     setSelectedAnswer(answer);
     const correct = answer === currentQuestion.correctAnswer;
     setIsCorrect(correct);
@@ -137,23 +141,24 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
 
     // Update scores
     if (correct) {
-      setScores(prev => ({
+      setScores((prev) => ({
         ...prev,
-        [currentQuestion.difficulty]: prev[currentQuestion.difficulty as keyof typeof prev] + 1
+        [currentQuestion.difficulty]:
+          prev[currentQuestion.difficulty as keyof typeof prev] + 1,
       }));
     }
   };
 
   const nextQuestion = () => {
     if (currentQuestionIndex < assessmentQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
       setIsCorrect(false);
     } else {
       // Assessment completed
-      const result = calculateResult();
-      onComplete(result);
+      const assessmentResult = calculateResult();
+      onComplete(assessmentResult);
     }
   };
 
@@ -166,10 +171,13 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
 
     // Determine level based on performance
     let level: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
-    
+
     if (advancedScore >= 2 && intermediateScore >= 2) {
       level = 'advanced';
-    } else if (intermediateScore >= 2 || (beginnerScore >= 2 && intermediateScore >= 1)) {
+    } else if (
+      intermediateScore >= 2 ||
+      (beginnerScore >= 2 && intermediateScore >= 1)
+    ) {
       level = 'intermediate';
     } else {
       level = 'beginner';
@@ -181,16 +189,20 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
       totalQuestions: assessmentQuestions.length,
       beginnerCorrect: beginnerScore,
       intermediateCorrect: intermediateScore,
-      advancedCorrect: advancedScore
+      advancedCorrect: advancedScore,
     };
   };
 
   const getDifficultyColor = (diff: string) => {
     switch (diff) {
-      case 'beginner': return 'text-green-600 bg-green-100';
-      case 'intermediate': return 'text-yellow-600 bg-yellow-100';
-      case 'advanced': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'beginner':
+        return 'text-green-600 bg-green-100';
+      case 'intermediate':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'advanced':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -207,7 +219,10 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
           {/* Progress */}
           <div className="mb-6">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Question {currentQuestionIndex + 1} of {assessmentQuestions.length}</span>
+              <span>
+                Question {currentQuestionIndex + 1} of{' '}
+                {assessmentQuestions.length}
+              </span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="w-full" />
@@ -216,19 +231,27 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
           {/* Question */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Question {currentQuestionIndex + 1}</h3>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(currentQuestion.difficulty)}`}>
+              <h3 className="text-lg font-semibold">
+                Question {currentQuestionIndex + 1}
+              </h3>
+              <span
+                className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(currentQuestion.difficulty)}`}
+              >
                 {currentQuestion.difficulty}
               </span>
             </div>
-            
+
             <div>
               <h4 className="text-lg font-semibold mb-2">Definition:</h4>
-              <p className="text-gray-700 dark:text-gray-300">{currentQuestion.definition}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {currentQuestion.definition}
+              </p>
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-4">Choose the correct word:</h4>
+              <h4 className="text-lg font-semibold mb-4">
+                Choose the correct word:
+              </h4>
               <div className="grid grid-cols-1 gap-3">
                 {currentQuestion.options.map((option, index) => (
                   <Button
@@ -244,13 +267,15 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
                       showResult && option === currentQuestion.correctAnswer
                         ? 'bg-green-100 border-green-500 text-green-800'
                         : selectedAnswer === option && !isCorrect
-                        ? 'bg-red-100 border-red-500 text-red-800'
-                        : ''
+                          ? 'bg-red-100 border-red-500 text-red-800'
+                          : ''
                     }`}
                     onClick={() => handleAnswerSelect(option)}
                     disabled={selectedAnswer !== null}
                   >
-                    <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
+                    <span className="font-medium mr-2">
+                      {String.fromCharCode(65 + index)}.
+                    </span>
                     {option}
                   </Button>
                 ))}
@@ -258,14 +283,19 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
             </div>
 
             {showResult && (
-              <div className={`p-4 rounded-lg ${
-                isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
+              <div
+                className={`p-4 rounded-lg ${
+                  isCorrect
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
                 <div className="font-semibold mb-2">
                   {isCorrect ? '✅ Correct!' : '❌ Incorrect!'}
                 </div>
                 <p>
-                  <strong>Correct answer:</strong> {currentQuestion.correctAnswer}
+                  <strong>Correct answer:</strong>{' '}
+                  {currentQuestion.correctAnswer}
                 </p>
               </div>
             )}
@@ -273,7 +303,9 @@ export default function LevelAssessment({ onComplete }: LevelAssessmentProps) {
             {showResult && (
               <div className="flex gap-2">
                 <Button onClick={nextQuestion} className="flex-1">
-                  {currentQuestionIndex < assessmentQuestions.length - 1 ? 'Next Question' : 'See Results'}
+                  {currentQuestionIndex < assessmentQuestions.length - 1
+                    ? 'Next Question'
+                    : 'See Results'}
                 </Button>
               </div>
             )}
