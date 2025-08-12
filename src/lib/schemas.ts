@@ -2,15 +2,20 @@ import { z } from 'zod';
 
 export const LangSchema = z.enum(['tr', 'en', 'de', 'es', 'it', 'pt']);
 
-export const PosSchema = z.enum(['noun', 'verb', 'adj']);
+export const PosSchema = z.enum([
+  'noun',
+  'verb',
+  'adj',
+  'adverb',
+  'preposition',
+]); // Expanded for more variety
 
 export const WordItemSchema = z.object({
   word: z.string(),
-  hint: z.string(),
+  definition: z.string(),
   example: z.string(),
-  exampleTranslation: z.string(),
   pos: PosSchema,
-  difficulty: z.number().int().min(1).max(10),
+  options: z.array(z.string()).length(3),
 });
 
 export type WordItem = z.infer<typeof WordItemSchema>;

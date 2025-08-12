@@ -1,6 +1,6 @@
 "use client";
 
-// Landing section showcasing BulMaze branding on the home page with onboarding flow.
+// Landing section showcasing WordMaster branding on the home page with onboarding flow.
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,9 +19,9 @@ export default function HomeLanding() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-4"
         >
-          <Image src="/logo.svg" alt="BulMaze logo" width={80} height={80} />
+          <Image src="/logo.svg" alt="WordMaster logo" width={80} height={80} />
           <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-[var(--bm-primary)] to-[var(--bm-secondary)] bg-clip-text text-transparent">
-            BulMaze
+            WordMaster
           </h1>
         </motion.div>
         <motion.p
@@ -30,7 +30,7 @@ export default function HomeLanding() {
           transition={{ delay: 0.3 }}
           className="mt-6 text-lg sm:text-xl max-w-2xl text-gray-600 dark:text-gray-300"
         >
-          Master English vocabulary first; puzzles are just dessert.
+          Master English vocabulary through interactive word games and spaced repetition learning.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -42,13 +42,13 @@ export default function HomeLanding() {
             href="/trainer"
             className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-primary)] hover:bg-teal-700 text-white flex items-center gap-2"
           >
-            Start today’s review
+            Start Learning
           </Link>
           <Link
             href="/quick"
             className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-secondary)] hover:bg-amber-600 text-white flex items-center gap-2 transition-colors"
           >
-            Play a quick puzzle
+            Quick Games
           </Link>
         </motion.div>
       </motion.div>

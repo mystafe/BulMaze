@@ -1,37 +1,46 @@
 'use client';
-import { useUiStore } from '@/lib/store';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
-const languages = ['tr', 'en', 'de', 'es', 'it', 'pt'];
+import { useUiStore } from '@/lib/store';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select';
+
+const languageMap: { [key: string]: string } = {
+  tr: 'Türkçe',
+  en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
+  it: 'Italiano',
+  pt: 'Português',
+};
 
 export default function LanguageSelector() {
   const uiLang = useUiStore((s) => s.uiLang);
-  const targetLang = useUiStore((s) => s.targetLang);
   const setUiLang = useUiStore((s) => s.setUiLang);
-  const setTargetLang = useUiStore((s) => s.setTargetLang);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-3">
+      <label
+        htmlFor="ui-lang-select"
+        className="font-medium text-gray-700 dark:text-gray-300"
+      >
+        Interface Language:
+      </label>
       <Select value={uiLang} onValueChange={setUiLang}>
-        <SelectTrigger className="w-[120px]">
-          <SelectValue placeholder="UI" />
+        <SelectTrigger
+          id="ui-lang-select"
+          className="w-full md:w-[200px] text-base p-4"
+        >
+          <SelectValue placeholder="Select Language" />
         </SelectTrigger>
         <SelectContent>
-          {languages.map((l) => (
-            <SelectItem key={l} value={l}>
-              {l.toUpperCase()}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select value={targetLang} onValueChange={setTargetLang}>
-        <SelectTrigger className="w-[120px]">
-          <SelectValue placeholder="Target" />
-        </SelectTrigger>
-        <SelectContent>
-          {languages.map((l) => (
-            <SelectItem key={l} value={l}>
-              {l.toUpperCase()}
+          {Object.entries(languageMap).map(([code, name]) => (
+            <SelectItem key={code} value={code} className="text-base">
+              {name}
             </SelectItem>
           ))}
         </SelectContent>

@@ -1,36 +1,85 @@
 /* eslint-disable no-unused-vars */
 import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { cefrToNumeric, requiredXP, CEFR, LevelNumeric } from './levels';
-import {
-  calcPoints,
-  revealRandomLetter,
-  diacriticInsensitiveEquals,
-} from './scoring';
+import { WordItem } from './schemas'; // Using the centralized schema
 import { postJSON } from './postJson';
-import { initCard, type CardState } from './spacedRepetition';
+import { useUiStore } from './store'; // Assuming uiStore is defined in the same file or imported
 
-const authEnabled = process.env.FEATURE_AUTH === 'true';
-let revealedSetWarned = false;
+// --- Daily Quest Store ---
+export interface DailyQuestState {
+  quest: WordItem[];
+  isLoading: boolean;
+  error: string | null;
+  lastFetched: Date | null;
+}
 
+export interface DailyQuestActions {
+  fetchQuest: (
+    level: 'beginner' | 'intermediate' | 'advanced',
+  ) => Promise<void>;
+  resetQuest: () => void;
+}
+
+const initialDailyQuestState: DailyQuestState = {
+  quest: [],
+  isLoading: false,
+  error: null,
+  lastFetched: null,
+};
+
+const dailyQuestStore: StateCreator<DailyQuestState & DailyQuestActions> = (
+  set,
+) => ({
+  ...initialDailyQuestState,
+  fetchQuest: async (level) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { uiLang } = useUiStore.getState();
+      const questData = await postJSON<WordItem[]>('/api/ai/generate', {
+        level,
+        uiLanguage: uiLang,
+        count: 10,
+      });
+
+      if (questData) {
+        set({ quest: questData, isLoading: false, lastFetched: new Date() });
+      } else {
+        throw new Error('Failed to fetch daily quest.');
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      set({ isLoading: false, error: errorMessage });
+      console.error(errorMessage);
+    }
+  },
+  resetQuest: () => set(initialDailyQuestState),
+});
+
+export const useDailyQuestStore = create<DailyQuestState & DailyQuestActions>()(
+  persist(dailyQuestStore, {
+    name: 'daily-quest',
+    storage: createJSONStorage(() => localStorage),
+  }),
+);
+
+// --- UI Store ---
 export interface UIState {
   uiLang: string;
-  targetLang: string;
+  readonly targetLang: 'en'; // Target language is always English and read-only
   theme: 'light' | 'dark';
 }
 
 export interface UIActions {
   setUiLang(lang: string): void;
-  setTargetLang(lang: string): void;
   setTheme(theme: 'light' | 'dark'): void;
 }
 
 const uiStore: StateCreator<UIState & UIActions> = (set) => ({
   uiLang: 'en',
-  targetLang: 'en',
+  targetLang: 'en', // Default to English
   theme: 'light',
   setUiLang: (uiLang: string) => set({ uiLang }),
-  setTargetLang: (targetLang: string) => set({ targetLang }),
   setTheme: (theme: 'light' | 'dark') => set({ theme }),
 });
 
@@ -43,109 +92,7 @@ export const useUiStore = create<UIState & UIActions>()(
       })) as StateCreator<UIState & UIActions>,
 );
 
-export interface WordItem {
-  word: string;
-  hint: string;
-  example: string;
-  exampleTranslation: string;
-  pos: string;
-  difficulty: string;
-}
-
-export interface GameState {
-  word: string;
-  hint: string;
-  example: string;
-  exampleTranslation: string;
-  pos: string;
-  difficulty: string;
-  revealed: Set<string>;
-  lettersTaken: number;
-  points: number;
-}
-
-export interface GameActions {
-  setWordItem(item: WordItem): void;
-  takeLetter(): void;
-  makeGuess(guess: string): boolean;
-  reset(): void;
-}
-
-const initialGameState = (): GameState => ({
-  word: '',
-  hint: '',
-  example: '',
-  exampleTranslation: '',
-  pos: '',
-  difficulty: '',
-  revealed: new Set<string>(),
-  lettersTaken: 0,
-  points: 100,
-});
-
-export const useGameStore = create<GameState & GameActions>()(
-  persist(
-    (set, get) => ({
-      ...initialGameState(),
-      setWordItem: (item) => set({ ...initialGameState(), ...item }),
-      takeLetter: () =>
-        set((state) => {
-          const lettersTaken = state.lettersTaken + 1;
-          return {
-            revealed: revealRandomLetter(state.word, state.revealed),
-            lettersTaken,
-            points: calcPoints(lettersTaken),
-          };
-        }),
-      makeGuess: (guess) => diacriticInsensitiveEquals(guess, get().word),
-      reset: () => set(initialGameState()),
-    }),
-    {
-      name: 'game',
-      storage: createJSONStorage(() => localStorage, {
-        replacer: (_key, value) =>
-          value instanceof Set ? Array.from(value) : value,
-        reviver: (key, value) => {
-          if (key === 'revealed') {
-            if (value instanceof Set) return value as Set<string>;
-            if (!revealedSetWarned && process.env.NODE_ENV !== 'production') {
-              console.warn('`revealed` was not a Set; fixing.');
-              revealedSetWarned = true;
-            }
-            if (Array.isArray(value)) return new Set<string>(value);
-            if (value && typeof value === 'object')
-              return new Set<string>(Array.from(value as Iterable<string>));
-            return new Set<string>();
-          }
-          return value;
-        },
-      }),
-      migrate: (state: unknown) => {
-        const s = state as { revealed?: unknown };
-        if (s && !(s.revealed instanceof Set)) {
-          if (!revealedSetWarned && process.env.NODE_ENV !== 'production') {
-            console.warn('Migrating non-Set `revealed`; fixing.');
-            revealedSetWarned = true;
-          }
-          if (Array.isArray(s.revealed)) {
-            return { ...s, revealed: new Set<string>(s.revealed) };
-          }
-          if (s.revealed && typeof s.revealed === 'object') {
-            return {
-              ...s,
-              revealed: new Set<string>(
-                Array.from(s.revealed as Iterable<string>),
-              ),
-            };
-          }
-          return { ...s, revealed: new Set<string>() };
-        }
-        return state;
-      },
-    },
-  ),
-);
-
+// --- Cards Store (for spaced repetition) ---
 export interface CardsState {
   cards: Record<string, CardState>;
   queue: string[];
@@ -184,6 +131,7 @@ export const useCardsStore = create<CardsState & CardsActions>()(
   ),
 );
 
+// --- Career Store (simplified for now) ---
 export interface CareerState {
   cefr: CEFR;
   levelNumeric: LevelNumeric;
