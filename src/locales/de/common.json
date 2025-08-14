@@ -12,7 +12,9 @@
   },
   "language": {
     "changed": "Sprache geändert",
-    "changedDesc": "Die Benutzeroberflächensprache wurde zu {{lang}} geändert"
+    "changedDesc": "Die Benutzeroberflächensprache wurde zu {{lang}} geändert",
+    "targetChanged": "Zielsprache geändert",
+    "targetChangedDesc": "Die Zielsprache wurde zu {{lang}} geändert"
   },
   "settings": {
     "title": "Einstellungen",
@@ -59,7 +61,9 @@
     "questRefreshed": "Quest aktualisiert!",
     "newQuestReady": "Ihre neue tägliche Quest ist bereit.",
     "cannotRefreshQuest": "Quest kann nicht aktualisiert werden",
-    "completeAssessmentFirst": "Bitte schließen Sie zuerst die Levelbewertung ab."
+    "completeAssessmentFirst": "Bitte schließen Sie zuerst die Levelbewertung ab.",
+    "refreshError": "Aktualisierung fehlgeschlagen",
+    "refreshErrorDesc": "Tägliche Quest konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut."
   },
   "mode": {
     "career": {

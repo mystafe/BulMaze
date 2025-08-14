@@ -4,7 +4,9 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
+import { useUiStore } from '@/lib/store';
+import { isAdminUser } from '@/lib/adminUsers';
 
 interface DemoUser {
   name: string;
@@ -17,28 +19,35 @@ export default function AuthButtons() {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [hasGoogleAuth, setHasGoogleAuth] = useState(false);
-  const { toast } = useToast();
+
   const prevStatus = useRef(status);
+
+  // Admin control
+  const setIsAdmin = useUiStore((s) => s.setIsAdmin);
 
   useEffect(() => {
     // Check for login
     if (prevStatus.current === 'loading' && status === 'authenticated') {
-      toast({
-        title: 'Signed In',
-        description: `Welcome back, ${session?.user?.name || 'User'}!`,
-      });
+      toast.success(`Welcome back, ${session?.user?.name || 'User'}!`);
     }
 
     // Check for demo mode login
     if (!demoUser && isDemoMode) {
-      toast({
-        title: 'Demo Mode Activated',
-        description: 'You are now browsing as a demo user.',
-      });
+      toast.success('Demo Mode Activated');
+    }
+
+    // Check admin status
+    const currentUser = isDemoMode ? demoUser : session?.user;
+    if (currentUser?.email) {
+      const adminStatus = isAdminUser(currentUser.email);
+      setIsAdmin(adminStatus);
+      if (adminStatus) {
+        toast.success('Admin privileges activated');
+      }
     }
 
     prevStatus.current = status;
-  }, [status, session, toast, isDemoMode, demoUser]);
+  }, [status, session, isDemoMode, demoUser, setIsAdmin]);
 
   // Check if Google OAuth is properly configured on mount
   useEffect(() => {
@@ -76,16 +85,10 @@ export default function AuthButtons() {
     if (isDemoMode) {
       setDemoUser(null);
       setIsDemoMode(false);
-      toast({
-        title: 'Signed Out',
-        description: 'You have signed out of demo mode.',
-      });
+      toast.success('Signed out of demo mode');
     } else {
       await signOut({ redirect: false });
-      toast({
-        title: 'Signed Out',
-        description: 'You have been successfully signed out.',
-      });
+      toast.success('Successfully signed out');
     }
   };
 

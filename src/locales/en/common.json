@@ -12,7 +12,9 @@
   },
   "language": {
     "changed": "Language Changed",
-    "changedDesc": "Interface language has been changed to {{lang}}"
+    "changedDesc": "Interface language has been changed to {{lang}}",
+    "targetChanged": "Target Language Changed",
+    "targetChangedDesc": "Target language has been changed to {{lang}}"
   },
   "settings": {
     "title": "Settings",
@@ -59,7 +61,9 @@
     "questRefreshed": "Quest Refreshed!",
     "newQuestReady": "Your new daily quest is ready.",
     "cannotRefreshQuest": "Cannot Refresh Quest",
-    "completeAssessmentFirst": "Please complete the level assessment first."
+    "completeAssessmentFirst": "Please complete the level assessment first.",
+    "refreshError": "Refresh Failed",
+    "refreshErrorDesc": "Failed to refresh daily quest. Please try again."
   },
   "mode": {
     "career": {

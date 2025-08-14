@@ -1,41 +1,54 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUiStore, useDailyQuestStore } from '@/lib/store';
 import { SessionProvider, useSession } from 'next-auth/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/lib/i18nClient';
 
-function AppInitializer({ children }: { children: ReactNode }) {
+function AppStateInitializer({ children }: { children: ReactNode }) {
   const { status } = useSession();
-  const fetchQuest = useDailyQuestStore((s) => s.fetchQuest);
-  const lastFetched = useDailyQuestStore((s) => s.lastFetched);
-  const quest = useDailyQuestStore((s) => s.quest);
+  const { fetchQuest, lastFetched, quest } = useDailyQuestStore();
+  const { targetLang } = useUiStore(); // Get targetLang from the UI store
+  const [userLevel, setUserLevel] = useState<
+    'beginner' | 'intermediate' | 'advanced' | null
+  >(null);
 
+  // Get userLevel from localStorage on the client side
   useEffect(() => {
-    const userLevel = localStorage.getItem('userLevel') as
+    const level = localStorage.getItem('userLevel') as
       | 'beginner'
       | 'intermediate'
       | 'advanced'
       | null;
+    setUserLevel(level);
+  }, []);
+
+  // Simplified logic to fetch user level (replace with your actual logic)
+  useEffect(() => {
     const isAuthenticated = status === 'authenticated';
+
+    if (!isAuthenticated || !userLevel) return;
 
     // Fetch quest if user is logged in, has a level, and hasn't fetched in the last 24 hours
     // or if there's no quest data available.
-    const shouldFetch = () => {
-      if (!isAuthenticated || !userLevel) return false;
-      if (quest.length === 0) return true;
-      if (!lastFetched) return true;
+    const shouldFetch = (): boolean => {
+      if (quest.length > 0) return false; // Already have a quest
+      if (!lastFetched) return true; // No quest and never fetched
 
-      const oneDay = 24 * 60 * 60 * 1000;
-      return new Date().getTime() - new Date(lastFetched).getTime() > oneDay;
+      const now = new Date();
+      const last = new Date(lastFetched);
+      const hoursSinceLastFetch =
+        (now.getTime() - last.getTime()) / (1000 * 60 * 60);
+
+      return hoursSinceLastFetch >= 24; // Fetch if it has been 24 hours
     };
 
     if (shouldFetch()) {
-      fetchQuest(userLevel!);
+      fetchQuest(userLevel, targetLang);
     }
-  }, [status, fetchQuest, lastFetched, quest.length]);
+  }, [status, fetchQuest, lastFetched, quest.length, userLevel, targetLang]);
 
   return <>{children}</>;
 }
@@ -68,7 +81,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
       <I18nextProvider i18n={i18n}>
-        <AppInitializer>{children}</AppInitializer>
+        <AppStateInitializer>{children}</AppStateInitializer>
       </I18nextProvider>
     </SessionProvider>
   );

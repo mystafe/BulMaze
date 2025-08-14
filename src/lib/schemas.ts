@@ -6,6 +6,7 @@ export const PosSchema = z.enum([
   'noun',
   'verb',
   'adj',
+  'adjective',
   'adverb',
   'preposition',
 ]); // Expanded for more variety

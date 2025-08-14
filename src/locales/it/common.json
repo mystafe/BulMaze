@@ -12,7 +12,9 @@
   },
   "language": {
     "changed": "Lingua cambiata",
-    "changedDesc": "La lingua dell'interfaccia è stata cambiata in {{lang}}"
+    "changedDesc": "La lingua dell'interfaccia è stata cambiata in {{lang}}",
+    "targetChanged": "Lingua obiettivo cambiata",
+    "targetChangedDesc": "La lingua obiettivo è stata cambiata in {{lang}}"
   },
   "settings": {
     "title": "Impostazioni",
@@ -59,7 +61,9 @@
     "questRefreshed": "Missione aggiornata!",
     "newQuestReady": "La tua nuova missione giornaliera è pronta.",
     "cannotRefreshQuest": "Impossibile aggiornare la missione",
-    "completeAssessmentFirst": "Completa prima la valutazione del livello."
+    "completeAssessmentFirst": "Completa prima la valutazione del livello.",
+    "refreshError": "Aggiornamento fallito",
+    "refreshErrorDesc": "Impossibile aggiornare la missione giornaliera. Riprova."
   },
   "mode": {
     "career": {

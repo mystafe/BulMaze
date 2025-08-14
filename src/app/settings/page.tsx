@@ -9,24 +9,56 @@ import LanguageSelector from '@/components/LanguageSelector';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useDailyQuestStore } from '@/lib/store';
-import { useToast } from '@/components/ui/use-toast';
+import { useDailyQuestStore, useUiStore, DemoUser } from '@/lib/store';
+import { toast } from 'sonner';
+import { isAdminUser } from '@/lib/adminUsers';
 
-interface DemoUser {
-  name: string;
-  email: string;
-  image: string | null;
-}
+// Define different demo user types
+const DEMO_USERS: DemoUser[] = [
+  {
+    name: 'Demo Admin',
+    email: 'demo@wordmaster.com',
+    image: null,
+    type: 'admin',
+  },
+  {
+    name: 'Demo Regular User',
+    email: 'user@wordmaster.com',
+    image: null,
+    type: 'regular',
+  },
+  {
+    name: 'Demo Beginner',
+    email: 'beginner@wordmaster.com',
+    image: null,
+    type: 'beginner',
+  },
+  {
+    name: 'Demo Advanced',
+    email: 'advanced@wordmaster.com',
+    image: null,
+    type: 'advanced',
+  },
+];
 
 export default function SettingsPage() {
   const { t } = useTranslation('common');
   const { data: session, status } = useSession();
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
   const [hasGoogleAuth, setHasGoogleAuth] = useState(false);
   const [userLevel, setUserLevel] = useState('Not determined');
-  const { fetchQuest, isLoading: isQuestLoading } = useDailyQuestStore();
-  const { toast } = useToast();
+  const { refreshQuest, isLoading: isQuestLoading } = useDailyQuestStore();
+  const targetLang = useUiStore((s) => s.targetLang);
+
+  // Global state for UI and demo mode
+  const {
+    isAdmin,
+    assessmentLength,
+    setAssessmentLength,
+    setIsAdmin,
+    isDemoMode,
+    demoUser,
+    setDemoMode,
+  } = useUiStore();
 
   // Load client-side only data after hydration
   useEffect(() => {
@@ -49,41 +81,63 @@ export default function SettingsPage() {
     setUserLevel(levelFromStorage);
   }, []);
 
-  // Check if we're in demo mode
   const currentUser = isDemoMode ? demoUser : session?.user;
   const isLoading = status === 'loading' && !isDemoMode;
 
-  const handleDemoSignIn = () => {
-    setIsDemoMode(true);
-    setDemoUser({
-      name: 'Demo User',
-      email: 'demo@wordmaster.com',
-      image: null, // Use local avatar instead
-    });
+  const handleDemoSignIn = (demoUserType: DemoUser) => {
+    setDemoMode(true, demoUserType);
+
+    // Set appropriate user level based on demo type
+    let level = 'intermediate';
+    switch (demoUserType.type) {
+      case 'beginner':
+        level = 'beginner';
+        break;
+      case 'advanced':
+        level = 'advanced';
+        break;
+      default:
+        level = 'intermediate';
+    }
+
+    localStorage.setItem('userLevel', level);
+    setUserLevel(level);
+
+    // Check and set admin status
+    const adminStatus = isAdminUser(demoUserType.email);
+    setIsAdmin(adminStatus);
+
+    if (adminStatus) {
+      toast.success(
+        `Demo mode activated: ${demoUserType.name} (Admin privileges enabled)`,
+      );
+    } else {
+      toast.success(`Demo mode activated: ${demoUserType.name}`);
+    }
   };
 
   const handleDemoSignOut = () => {
-    setDemoUser(null);
-    setIsDemoMode(false);
+    setDemoMode(false, null);
+    setIsAdmin(false);
+    toast.success('Demo mode deactivated');
   };
 
   const handleRefreshQuest = async () => {
+    console.log('Refresh Quest clicked:', { userLevel, isQuestLoading });
     if (userLevel !== 'Not determined') {
-      toast({
-        title: t('settings.refreshingQuest'),
-        description: t('settings.fetchingWords'),
-      });
-      await fetchQuest(userLevel as 'beginner' | 'intermediate' | 'advanced');
-      toast({
-        title: t('settings.questRefreshed'),
-        description: t('settings.newQuestReady'),
-      });
+      toast(t('settings.refreshingQuest'));
+
+      try {
+        await refreshQuest(
+          userLevel as 'beginner' | 'intermediate' | 'advanced',
+          targetLang,
+        );
+        toast.success(t('settings.questRefreshed'));
+      } catch {
+        toast.error(t('settings.refreshError'));
+      }
     } else {
-      toast({
-        title: t('settings.cannotRefreshQuest'),
-        description: t('settings.completeAssessmentFirst'),
-        variant: 'destructive',
-      });
+      toast.error(t('settings.cannotRefreshQuest'));
     }
   };
 
@@ -137,11 +191,18 @@ export default function SettingsPage() {
                       )}
                     </h3>
                     <p className="text-gray-600">{currentUser.email}</p>
-                    <Badge variant="secondary" className="mt-2">
-                      {isDemoMode
-                        ? t('settings.demoMode')
-                        : t('settings.authenticated')}
-                    </Badge>
+                    <div className="flex gap-2 mt-2">
+                      <Badge variant="secondary">
+                        {isDemoMode
+                          ? t('settings.demoMode')
+                          : t('settings.authenticated')}
+                      </Badge>
+                      {isDemoMode && demoUser && (
+                        <Badge variant="outline" className="capitalize">
+                          {demoUser.type}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -162,7 +223,7 @@ export default function SettingsPage() {
                 <p className="text-gray-600 mb-4">
                   {t('settings.signInToAccess')}
                 </p>
-                <div className="flex gap-2 justify-center">
+                <div className="flex gap-2 justify-center mb-4">
                   {hasGoogleAuth && (
                     <Button
                       onClick={() => {
@@ -176,10 +237,32 @@ export default function SettingsPage() {
                       {t('settings.signInWithGoogle')}
                     </Button>
                   )}
-                  <Button variant="outline" onClick={handleDemoSignIn}>
-                    {t('settings.tryDemoMode')}
-                  </Button>
                 </div>
+
+                {/* Demo Mode Buttons */}
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-3 text-gray-700 dark:text-gray-300">
+                    Try Demo Modes
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {DEMO_USERS.map((demoUser) => (
+                      <Button
+                        key={demoUser.type}
+                        variant="outline"
+                        onClick={() => handleDemoSignIn(demoUser)}
+                        className="justify-start text-left h-auto py-3 px-4"
+                      >
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{demoUser.name}</span>
+                          <span className="text-xs text-gray-500 capitalize">
+                            {demoUser.type} user
+                          </span>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 {!hasGoogleAuth && (
                   <p className="text-xs text-gray-500 mt-2">
                     {t('settings.googleOAuthNotConfigured')}
@@ -296,11 +379,18 @@ export default function SettingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleRefreshQuest}
-                disabled={isQuestLoading}
+                disabled={isQuestLoading || userLevel === 'Not determined'}
+                className={
+                  userLevel === 'Not determined'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }
               >
                 {isQuestLoading
                   ? t('settings.refreshing')
-                  : t('settings.refresh')}
+                  : userLevel === 'Not determined'
+                    ? t('settings.completeAssessmentFirst')
+                    : t('settings.refresh')}
               </Button>
             </div>
             <div className="flex items-center justify-between">
@@ -331,6 +421,63 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Admin Settings - Only visible to admins */}
+        {isAdmin && (
+          <Card className="border-2 border-purple-200 bg-purple-50 dark:bg-purple-950 dark:border-purple-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-2xl">👑</span>
+                Admin Settings
+                <Badge className="bg-purple-600 text-white">Admin Only</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">Assessment Length</h3>
+                  <p className="text-sm text-gray-600">
+                    Number of words to learn per session (default: 3)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setAssessmentLength(Math.max(1, assessmentLength - 1))
+                    }
+                    disabled={assessmentLength <= 1}
+                  >
+                    -
+                  </Button>
+                  <span className="w-8 text-center font-semibold">
+                    {assessmentLength}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setAssessmentLength(Math.min(10, assessmentLength + 1))
+                    }
+                    disabled={assessmentLength >= 10}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">Admin Status</h3>
+                  <p className="text-sm text-gray-600">
+                    You have administrator privileges
+                  </p>
+                </div>
+                <Badge className="bg-green-600 text-white">Active</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* About */}
         <Card>

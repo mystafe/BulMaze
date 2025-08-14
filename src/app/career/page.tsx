@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import LevelAssessment from '@/components/LevelAssessment';
-import { useDailyQuestStore } from '@/lib/store'; // Import the new store
-import DailyQuestGame from '@/components/DailyQuestGame'; // Import the new game component
+import { useDailyQuestStore, useUiStore } from '@/lib/store';
+import DailyQuestGame from '@/components/DailyQuestGame';
 
 interface AssessmentResult {
   level: 'beginner' | 'intermediate' | 'advanced';
@@ -38,6 +39,7 @@ interface CareerStats {
   studyStreak: number;
   longestStreak: number;
   achievements: Achievement[];
+  userLevel: 'beginner' | 'intermediate' | 'advanced';
 }
 
 // A helper function to define level progression
@@ -46,50 +48,64 @@ const getLevelExperience = (level: number) => {
 };
 
 export default function CareerPage() {
-  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
+  const { data: session } = useSession();
+  const {
+    quest,
+    isLoading: isQuestLoading,
+    error: questError,
+    fetchQuest,
+  } = useDailyQuestStore();
+  const { targetLang, isDemoMode, demoUser } = useUiStore();
+
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [assessmentResult, setAssessmentResult] =
     useState<AssessmentResult | null>(null);
   const [careerData, setCareerData] = useState<CareerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isQuestActive, setIsQuestActive] = useState(false);
 
-  // Zustand state for daily quests
-  const {
-    quest,
-    isLoading: isQuestLoading,
-    error: questError,
-  } = useDailyQuestStore();
+  const currentUser = isDemoMode ? demoUser : session?.user;
+  const userId = currentUser?.email; // Use email as a unique ID
 
   useEffect(() => {
-    // Check localStorage only on the client side
-    const completed = localStorage.getItem('assessmentCompleted') === 'true';
-    if (completed) {
-      setHasCompletedAssessment(true);
-      // If completed, try to load existing data
-      const savedResult = localStorage.getItem('assessmentResult');
-      const savedCareerData = localStorage.getItem('careerData');
-      if (savedResult && savedCareerData) {
-        setAssessmentResult(JSON.parse(savedResult));
-        setCareerData(JSON.parse(savedCareerData));
-      }
+    if (!userId) {
+      setIsLoading(false);
+      return; // Don't load data if no user is logged in
     }
+
+    const completedKey = `assessmentCompleted_${userId}_${targetLang}`;
+    const resultKey = `assessmentResult_${userId}_${targetLang}`;
+    const dataKey = `careerData_${userId}_${targetLang}`;
+
+    const completed = localStorage.getItem(completedKey) === 'true';
+    const result = localStorage.getItem(resultKey);
+    const data = localStorage.getItem(dataKey);
+
+    setAssessmentCompleted(completed);
+    setAssessmentResult(result ? JSON.parse(result) : null);
+    setCareerData(data ? JSON.parse(data) : null);
     setIsLoading(false);
-  }, []);
+  }, [userId, targetLang]);
+
+  useEffect(() => {
+    if (careerData?.userLevel) {
+      fetchQuest(careerData.userLevel, targetLang);
+    }
+  }, [careerData, targetLang, fetchQuest]);
 
   const handleAssessmentComplete = (result: AssessmentResult) => {
-    setAssessmentResult(result);
-    setHasCompletedAssessment(true);
+    if (!userId) return;
 
-    // Initialize career data based on assessment result
     const initialLevel =
       result.level === 'beginner'
         ? 1
         : result.level === 'intermediate'
           ? 5
           : 10;
+
     const initialCareerData: CareerStats = {
       level: initialLevel,
-      experience: 0, // Start with 0 XP after assessment
+      experience: 0,
       experienceToNext: getLevelExperience(initialLevel),
       totalWordsLearned: result.score,
       totalGamesPlayed: 1,
@@ -109,8 +125,8 @@ export default function CareerPage() {
         },
         {
           id: '2',
-          title: 'Level Determined',
-          description: `Your level: ${result.level}`,
+          title: `${targetLang.toUpperCase()} Level Determined`,
+          description: `Your ${targetLang} level: ${result.level}`,
           icon: '📊',
           unlocked: true,
           unlockedDate: new Date().toISOString().split('T')[0],
@@ -119,8 +135,8 @@ export default function CareerPage() {
         },
         {
           id: '3',
-          title: 'Vocabulary Explorer',
-          description: 'Learn 50 words',
+          title: `${targetLang.toUpperCase()} Vocabulary Explorer`,
+          description: `Learn 50 ${targetLang} words`,
           icon: '🗺️',
           unlocked: false,
           progress: result.score,
@@ -146,34 +162,39 @@ export default function CareerPage() {
         },
         {
           id: '6',
-          title: 'Grammar Guru',
-          description: 'Master 100 words',
+          title: `${targetLang.toUpperCase()} Grammar Guru`,
+          description: `Master 100 ${targetLang} words`,
           icon: '👑',
           unlocked: false,
           progress: result.score,
           maxProgress: 100,
         },
       ],
+      userLevel: result.level,
     };
 
-    setCareerData(initialCareerData);
+    const completedKey = `assessmentCompleted_${userId}_${targetLang}`;
+    const levelKey = `userLevel_${userId}_${targetLang}`;
+    const resultKey = `assessmentResult_${userId}_${targetLang}`;
+    const dataKey = `careerData_${userId}_${targetLang}`;
 
-    // Save completion status and data to localStorage
-    localStorage.setItem('assessmentCompleted', 'true');
-    localStorage.setItem('userLevel', result.level);
-    localStorage.setItem('assessmentResult', JSON.stringify(result));
-    localStorage.setItem('careerData', JSON.stringify(initialCareerData));
+    localStorage.setItem(completedKey, 'true');
+    localStorage.setItem(levelKey, result.level);
+    localStorage.setItem(resultKey, JSON.stringify(result));
+    localStorage.setItem(dataKey, JSON.stringify(initialCareerData));
+
+    setAssessmentCompleted(true);
+    setAssessmentResult(result);
+    setCareerData(initialCareerData);
   };
 
   const handleQuestComplete = (score: number) => {
-    if (!careerData) return;
+    if (!careerData || !userId) return;
 
-    const xpGained = score * 10;
-    let newExperience = careerData.experience + xpGained;
+    let newExperience = careerData.experience + score * 10;
     let newLevel = careerData.level;
     let experienceToNext = careerData.experienceToNext;
 
-    // Check for level up
     while (newExperience >= experienceToNext) {
       newExperience -= experienceToNext;
       newLevel += 1;
@@ -184,10 +205,9 @@ export default function CareerPage() {
       ...careerData,
       level: newLevel,
       experience: newExperience,
-      experienceToNext: experienceToNext,
+      experienceToNext,
       totalWordsLearned: careerData.totalWordsLearned + score,
       totalGamesPlayed: careerData.totalGamesPlayed + 1,
-      // Recalculate average score
       averageScore: Math.round(
         (((careerData.averageScore / 100) * careerData.totalGamesPlayed +
           score / 10) /
@@ -197,19 +217,29 @@ export default function CareerPage() {
     };
 
     setCareerData(updatedCareerData);
-    localStorage.setItem('careerData', JSON.stringify(updatedCareerData));
-    setIsQuestActive(false); // Go back to the career dashboard
+    localStorage.setItem(
+      `careerData_${userId}_${targetLang}`,
+      JSON.stringify(updatedCareerData),
+    );
+    setIsQuestActive(false);
   };
 
   const resetAssessment = () => {
-    // Clear data from state and localStorage
-    setHasCompletedAssessment(false);
+    if (!userId) return;
+
+    const completedKey = `assessmentCompleted_${userId}_${targetLang}`;
+    const levelKey = `userLevel_${userId}_${targetLang}`;
+    const resultKey = `assessmentResult_${userId}_${targetLang}`;
+    const dataKey = `careerData_${userId}_${targetLang}`;
+
+    localStorage.removeItem(completedKey);
+    localStorage.removeItem(levelKey);
+    localStorage.removeItem(resultKey);
+    localStorage.removeItem(dataKey);
+
+    setAssessmentCompleted(false);
     setAssessmentResult(null);
     setCareerData(null);
-    localStorage.removeItem('assessmentCompleted');
-    localStorage.removeItem('userLevel');
-    localStorage.removeItem('assessmentResult');
-    localStorage.removeItem('careerData');
   };
 
   if (isLoading) {
@@ -220,24 +250,35 @@ export default function CareerPage() {
     );
   }
 
-  if (!hasCompletedAssessment) {
+  if (!currentUser) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">
-            Start Your Learning Journey
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Take a quick assessment to determine your vocabulary level and start
-            your personalized learning path
-          </p>
-        </div>
-        <LevelAssessment onComplete={handleAssessmentComplete} />
+      <div className="text-center py-10">
+        <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+        <p>You need to be signed in to view your career progress.</p>
       </div>
     );
   }
 
-  // If quest is active, show the game
+  if (!assessmentCompleted) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4">
+            Start Your {targetLang.toUpperCase()} Learning Journey
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Take a quick assessment to determine your {targetLang} vocabulary
+            level and start your personalized learning path
+          </p>
+        </div>
+        <LevelAssessment
+          onComplete={handleAssessmentComplete}
+          targetLang={targetLang}
+        />
+      </div>
+    );
+  }
+
   if (isQuestActive) {
     return (
       <div className="container mx-auto py-8">
@@ -246,9 +287,7 @@ export default function CareerPage() {
     );
   }
 
-  // --- Daily Quests and Career Dashboard ---
-  if (!careerData) {
-    // This can happen if localStorage is cleared but assessmentCompleted is still true
+  if (!careerData || !assessmentResult) {
     return (
       <div className="text-center py-10">
         <p className="mb-4">
@@ -285,7 +324,7 @@ export default function CareerPage() {
             variant="secondary"
             className="text-lg font-bold"
             disabled={isQuestLoading || quest.length === 0}
-            onClick={() => setIsQuestActive(true)} // Start the quest
+            onClick={() => setIsQuestActive(true)}
           >
             {isQuestLoading ? (
               <>
@@ -309,10 +348,10 @@ export default function CareerPage() {
             <span className="text-3xl">👨‍🎓</span>
             Level {careerData.level} -{' '}
             {assessmentResult?.level === 'beginner'
-              ? 'Vocabulary Beginner'
+              ? `${targetLang.toUpperCase()} Vocabulary Beginner`
               : assessmentResult?.level === 'intermediate'
-                ? 'Vocabulary Explorer'
-                : 'Vocabulary Scholar'}
+                ? `${targetLang.toUpperCase()} Vocabulary Explorer`
+                : `${targetLang.toUpperCase()} Vocabulary Scholar`}
           </CardTitle>
           <Button variant="outline" size="sm" onClick={resetAssessment}>
             Retake Assessment
@@ -340,7 +379,9 @@ export default function CareerPage() {
             <div className="text-3xl font-bold text-blue-600">
               {careerData.totalWordsLearned}
             </div>
-            <div className="text-sm text-gray-600 mt-1">Words Learned</div>
+            <div className="text-sm text-gray-600 mt-1">
+              {targetLang.toUpperCase()} Words Learned
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -404,7 +445,6 @@ export default function CareerPage() {
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         {achievement.description}
                       </p>
-
                       {achievement.unlocked ? (
                         <div className="text-xs text-green-600 dark:text-green-400">
                           ✓ Unlocked{' '}

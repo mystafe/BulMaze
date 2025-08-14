@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import type { Options } from 'canvas-confetti';
-// eslint-disable-next-line no-unused-vars
+
 type ConfettiFn = (options: Options) => void;
 
 export default function ConfettiCelebration() {

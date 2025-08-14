@@ -12,7 +12,9 @@
   },
   "language": {
     "changed": "Dil Değiştirildi",
-    "changedDesc": "Arayüz dili {{lang}} olarak değiştirildi"
+    "changedDesc": "Arayüz dili {{lang}} olarak değiştirildi",
+    "targetChanged": "Hedef Dil Değiştirildi",
+    "targetChangedDesc": "Hedef dil {{lang}} olarak değiştirildi"
   },
   "settings": {
     "title": "Ayarlar",
@@ -59,7 +61,9 @@
     "questRefreshed": "Görev Yenilendi!",
     "newQuestReady": "Yeni günlük göreviniz hazır.",
     "cannotRefreshQuest": "Görev Yenilenemiyor",
-    "completeAssessmentFirst": "Lütfen önce seviye değerlendirmesini tamamlayın."
+    "completeAssessmentFirst": "Lütfen önce seviye değerlendirmesini tamamlayın.",
+    "refreshError": "Yenileme Başarısız",
+    "refreshErrorDesc": "Günlük görev yenilenemedi. Lütfen tekrar deneyin."
   },
   "mode": {
     "career": {

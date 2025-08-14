@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { WordItem } from './schemas'; // Using the centralized schema
@@ -6,6 +5,15 @@ import { postJSON } from './postJson';
 
 // Check if authentication is enabled
 const authEnabled = process.env.FEATURE_AUTH === 'true';
+
+// --- Demo User Interface ---
+// Moved here to be globally accessible
+export interface DemoUser {
+  name: string;
+  email: string;
+  image: string | null;
+  type?: 'admin' | 'regular' | 'beginner' | 'advanced';
+}
 
 // --- Daily Quest Store ---
 export interface DailyQuestState {
@@ -18,8 +26,13 @@ export interface DailyQuestState {
 export interface DailyQuestActions {
   fetchQuest: (
     level: 'beginner' | 'intermediate' | 'advanced',
+    targetLang: string,
   ) => Promise<void>;
   resetQuest: () => void;
+  refreshQuest: (
+    level: 'beginner' | 'intermediate' | 'advanced',
+    targetLang: string,
+  ) => Promise<void>;
 }
 
 const initialDailyQuestState: DailyQuestState = {
@@ -33,11 +46,21 @@ const dailyQuestStore: StateCreator<DailyQuestState & DailyQuestActions> = (
   set,
 ) => ({
   ...initialDailyQuestState,
-  fetchQuest: async (level) => {
+  fetchQuest: async (level, targetLang) => {
     set({ isLoading: true, error: null });
     try {
+      // Get current UI language
+      const uiLang =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('ui')
+            ? JSON.parse(localStorage.getItem('ui')!).state.uiLang
+            : 'en'
+          : 'en';
+
       const questData = await postJSON<WordItem[]>('/api/ai/generate', {
         level,
+        uiLanguage: uiLang,
+        targetLanguage: targetLang, // Use passed targetLang
         count: 10,
       });
 
@@ -54,6 +77,40 @@ const dailyQuestStore: StateCreator<DailyQuestState & DailyQuestActions> = (
     }
   },
   resetQuest: () => set(initialDailyQuestState),
+  refreshQuest: async (level, targetLang) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Reset the quest first
+      set(initialDailyQuestState);
+
+      // Get current UI language
+      const uiLang =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('ui')
+            ? JSON.parse(localStorage.getItem('ui')!).state.uiLang
+            : 'en'
+          : 'en';
+
+      // Fetch new quest
+      const questData = await postJSON<WordItem[]>('/api/ai/generate', {
+        level,
+        uiLanguage: uiLang,
+        targetLanguage: targetLang, // Use passed targetLang
+        count: 10,
+      });
+
+      if (questData) {
+        set({ quest: questData, isLoading: false, lastFetched: new Date() });
+      } else {
+        throw new Error('Failed to refresh daily quest.');
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      set({ isLoading: false, error: errorMessage });
+      console.error(errorMessage);
+    }
+  },
 });
 
 export const useDailyQuestStore = create<DailyQuestState & DailyQuestActions>()(
@@ -66,30 +123,45 @@ export const useDailyQuestStore = create<DailyQuestState & DailyQuestActions>()(
 // --- UI Store ---
 export interface UIState {
   uiLang: string;
-  readonly targetLang: 'en'; // Target language is always English and read-only
+  targetLang: string; // Target language can now be changed
   theme: 'light' | 'dark';
+  assessmentLength: number; // Number of words to learn per session
+  isAdmin: boolean; // Admin privileges
+  isDemoMode: boolean; // Is the user in demo mode?
+  demoUser: DemoUser | null; // Info about the demo user
 }
 
 export interface UIActions {
   setUiLang(lang: string): void;
+  setTargetLang(lang: string): void;
   setTheme(theme: 'light' | 'dark'): void;
+  setAssessmentLength(length: number): void;
+  setIsAdmin(isAdmin: boolean): void;
+  setDemoMode(isDemo: boolean, user?: DemoUser | null): void;
 }
 
 const uiStore: StateCreator<UIState & UIActions> = (set) => ({
   uiLang: 'en',
   targetLang: 'en', // Default to English
   theme: 'light',
+  assessmentLength: 3, // Default to 3 words per session
+  isAdmin: false, // Default to non-admin
+  isDemoMode: false,
+  demoUser: null,
   setUiLang: (uiLang: string) => set({ uiLang }),
+  setTargetLang: (targetLang: string) => set({ targetLang }),
   setTheme: (theme: 'light' | 'dark') => set({ theme }),
+  setAssessmentLength: (assessmentLength: number) => set({ assessmentLength }),
+  setIsAdmin: (isAdmin: boolean) => set({ isAdmin }),
+  setDemoMode: (isDemo: boolean, user: DemoUser | null = null) =>
+    set({ isDemoMode: isDemo, demoUser: user }),
 });
 
 export const useUiStore = create<UIState & UIActions>()(
-  (authEnabled
-    ? uiStore
-    : persist(uiStore, {
-        name: 'ui',
-        storage: createJSONStorage(() => localStorage),
-      })) as StateCreator<UIState & UIActions>,
+  persist(uiStore, {
+    name: 'ui',
+    storage: createJSONStorage(() => localStorage),
+  }),
 );
 
 // --- Cards Store (for spaced repetition) ---
