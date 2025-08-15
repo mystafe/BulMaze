@@ -7,5 +7,20 @@
   "points": "Punti",
   "fetchError": "Impossibile recuperare la parola",
   "correct": "Corretto!",
-  "incorrect": "Risposta errata"
+  "incorrect": "Indovinello errato",
+  "quick_games": "Giochi Veloci",
+  "quick": "Veloce",
+  "new_game": "Nuova partita",
+  "pass": "Passa",
+  "scramble_title": "Parola Mischiata",
+  "wordle_title": "Wordle",
+  "hangman_title": "Impiccato",
+  "crossword_title": "Cruciverba",
+  "check": "Controlla",
+  "next": "Avanti",
+  "across": "Orizzontale",
+  "down": "Verticale",
+  "reveal_letter": "Rivela lettera",
+  "reveal_word": "Rivela parola",
+  "clear_word": "Cancella parola"
 }

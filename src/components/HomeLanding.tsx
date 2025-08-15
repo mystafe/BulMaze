@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
 // Landing section showcasing WordMaster branding on the home page with onboarding flow.
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeLanding() {
+  const { t } = useTranslation('common');
   return (
     <section className="flex flex-col items-center justify-center min-h-[70vh] text-center">
       <motion.div
@@ -30,7 +32,10 @@ export default function HomeLanding() {
           transition={{ delay: 0.3 }}
           className="mt-6 text-lg sm:text-xl max-w-2xl text-gray-600 dark:text-gray-300"
         >
-          Master English vocabulary through interactive word games and spaced repetition learning.
+          {t('hero_subtitle', {
+            defaultValue:
+              'Master English vocabulary through interactive word games and spaced repetition learning.',
+          })}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -42,13 +47,13 @@ export default function HomeLanding() {
             href="/trainer"
             className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-primary)] hover:bg-teal-700 text-white flex items-center gap-2"
           >
-            Start Learning
+            {t('cta_learn', { defaultValue: 'Start Learning' })}
           </Link>
           <Link
             href="/quick"
             className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-secondary)] hover:bg-amber-600 text-white flex items-center gap-2 transition-colors"
           >
-            Quick Games
+            {t('cta_quick', { defaultValue: 'Quick Games' })}
           </Link>
         </motion.div>
       </motion.div>

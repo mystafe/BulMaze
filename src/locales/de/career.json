@@ -4,7 +4,7 @@
     "desc": "Starte den Test, um dein Niveau zu entdecken.",
     "start": "Test starten"
   },
-  "loading": "Lädt...",
+  "loading": "Laden...",
   "evaluating": "Wird bewertet...",
   "question": "Frage",
   "answerPlaceholder": "Deine Antwort",

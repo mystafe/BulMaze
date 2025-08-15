@@ -7,5 +7,13 @@
   "points": "Points",
   "fetchError": "Failed to fetch word",
   "correct": "Correct!",
-  "incorrect": "Incorrect guess"
+  "incorrect": "Incorrect guess",
+  "quick_games": "Quick Games",
+  "new_game": "New Game",
+  "pass": "Pass",
+  "scramble_title": "Word Scramble",
+  "wordle_title": "Wordle",
+  "crossword_title": "Crossword",
+  "check": "Check",
+  "next": "Next"
 }

@@ -76,5 +76,10 @@
       "desc": "Starte sofort ein Spiel ohne Anmeldung.",
       "start": "Spielen"
     }
-  }
+  },
+  "select_language": "Sprache auswählen",
+  "cancel": "Abbrechen",
+  "start_game": "Spiel starten",
+  "ui_language": "UI",
+  "target_language": "Ziel"
 }

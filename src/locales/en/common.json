@@ -76,5 +76,14 @@
       "desc": "Start a game instantly without login.",
       "start": "Play"
     }
-  }
+  },
+  "select_language": "Select Language",
+  "cancel": "Cancel",
+  "start_game": "Start Game",
+  "ui_language": "UI",
+  "target_language": "Target",
+  "hero_subtitle": "Master English vocabulary through interactive word games and spaced repetition learning.",
+  "cta_learn": "Start Learning",
+  "cta_quick": "Quick Games",
+  "quick_label": "Quick"
 }

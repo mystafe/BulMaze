@@ -76,5 +76,10 @@
       "desc": "Avvia subito una partita senza login.",
       "start": "Gioca"
     }
-  }
+  },
+  "select_language": "Seleziona la lingua",
+  "cancel": "Annulla",
+  "start_game": "Inizia il gioco",
+  "ui_language": "UI",
+  "target_language": "Obiettivo"
 }

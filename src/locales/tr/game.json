@@ -7,5 +7,20 @@
   "points": "Puan",
   "fetchError": "Kelime alınamadı",
   "correct": "Doğru!",
-  "incorrect": "Yanlış tahmin"
+  "incorrect": "Yanlış tahmin",
+  "quick_games": "Hızlı Oyunlar",
+  "quick": "Hızlı",
+  "new_game": "Yeni Oyun",
+  "pass": "Geç",
+  "scramble_title": "Kelime Karıştırma",
+  "wordle_title": "Wordle",
+  "hangman_title": "Adam Asmaca",
+  "crossword_title": "Çapraz Bulmaca",
+  "check": "Kontrol Et",
+  "next": "Sonraki",
+  "across": "Yatay",
+  "down": "Dikey",
+  "reveal_letter": "Harf göster",
+  "reveal_word": "Kelimeyi göster",
+  "clear_word": "Kelimeyi temizle"
 }

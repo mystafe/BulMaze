@@ -7,5 +7,20 @@
   "points": "Puntos",
   "fetchError": "No se pudo obtener la palabra",
   "correct": "¡Correcto!",
-  "incorrect": "Respuesta incorrecta"
+  "incorrect": "Adivinanza incorrecta",
+  "quick_games": "Juegos Rápidos",
+  "quick": "Rápido",
+  "new_game": "Nuevo juego",
+  "pass": "Pasar",
+  "scramble_title": "Anagrama",
+  "wordle_title": "Wordle",
+  "hangman_title": "Ahorcado",
+  "crossword_title": "Crucigrama",
+  "check": "Comprobar",
+  "next": "Siguiente",
+  "across": "Horizontal",
+  "down": "Vertical",
+  "reveal_letter": "Mostrar letra",
+  "reveal_word": "Mostrar palabra",
+  "clear_word": "Borrar palabra"
 }

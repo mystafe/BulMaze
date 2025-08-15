@@ -7,5 +7,20 @@
   "points": "Pontos",
   "fetchError": "Falha ao buscar palavra",
   "correct": "Correto!",
-  "incorrect": "Palpite incorreto"
+  "incorrect": "Adivinha incorreta",
+  "quick_games": "Jogos Rápidos",
+  "quick": "Rápido",
+  "new_game": "Novo jogo",
+  "pass": "Passar",
+  "scramble_title": "Palavra Embaralhada",
+  "wordle_title": "Wordle",
+  "hangman_title": "Forca",
+  "crossword_title": "Palavras Cruzadas",
+  "check": "Verificar",
+  "next": "Próximo",
+  "across": "Horizontal",
+  "down": "Vertical",
+  "reveal_letter": "Revelar letra",
+  "reveal_word": "Revelar palavra",
+  "clear_word": "Limpar palavra"
 }

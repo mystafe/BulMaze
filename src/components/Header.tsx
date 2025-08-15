@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
 import AuthButtons from './AuthButtons';
+import CompactLanguageSelector from './CompactLanguageSelector';
 
 export default function Header() {
   const { t } = useTranslation('common');
@@ -75,6 +76,7 @@ export default function Header() {
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
           <Link href="/settings">{t('nav.settings')}</Link>
         </Button>
+        <CompactLanguageSelector />
         <AuthButtons />
         <ThemeToggle />
       </nav>

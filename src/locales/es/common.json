@@ -76,5 +76,10 @@
       "desc": "Inicia un juego al instante sin iniciar sesión.",
       "start": "Jugar"
     }
-  }
+  },
+  "select_language": "Selecciona un idioma",
+  "cancel": "Cancelar",
+  "start_game": "Empezar juego",
+  "ui_language": "UI",
+  "target_language": "Objetivo"
 }

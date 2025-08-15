@@ -365,10 +365,10 @@ function generateFallbackQuest(
                 ? 'sophisticated'
                 : uiLang === 'de'
                   ? 'anspruchsvoll'
-                  : uiLang === 'it'
-                    ? 'sofisticato'
-                    : uiLang === 'pt'
-                      ? 'sofisticado'
+                  : uiLang === 'es'
+                    ? 'sofisticado'
+                    : uiLang === 'it'
+                      ? 'sofisticato'
                       : 'sofisticado',
           example: 'Ella tiene gustos sofisticados.',
           pos: 'adj',
@@ -459,8 +459,8 @@ function generateFallbackQuest(
                   ? 'anspruchsvoll'
                   : uiLang === 'es'
                     ? 'sofisticado'
-                    : uiLang === 'pt'
-                      ? 'sofisticado'
+                    : uiLang === 'it'
+                      ? 'sofisticato'
                       : 'sofisticato',
           example: 'Lei ha gusti sofisticati.',
           pos: 'adj',
@@ -706,6 +706,123 @@ export async function generateDailyQuest(args: {
     // For other errors, also use fallback
     console.log('OpenAI request failed, using fallback data');
     return generateFallbackQuest(level, uiLang, targetLang, count);
+  }
+}
+
+export async function generateGameContent(args: {
+  gameType: 'word-scramble' | 'wordle' | 'hangman' | 'crossword';
+  targetLang: Lang;
+  uiLang?: Lang;
+  count: number;
+  seed?: number;
+}): Promise<unknown | null> {
+  const { gameType, targetLang, uiLang, count, seed } = args;
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey || apiKey.includes('invalid') || apiKey.length < 50) {
+    console.log('Using fallback demo data due to invalid API key');
+    return null;
+  }
+
+  const openai = getClient();
+  let system = '';
+  let user = '';
+
+  switch (gameType) {
+    case 'word-scramble':
+      system = `You are a language learning content generator for ${targetLang} learners. Return VALID JSON only.`;
+      user = `
+        SEED: ${seed ?? Date.now()}
+        Generate EXACTLY ${count} different ${targetLang} words for a word scramble game.
+        The words should be of medium difficulty.
+        IMPORTANT:
+        - Return a JSON object with a "words" key, which is an array of ${count} strings.
+        - No explanations.
+      `;
+      break;
+    case 'wordle':
+      system = `You are a language learning content generator for ${targetLang} learners. Return VALID JSON only.`;
+      user = `
+        SEED: ${seed ?? Date.now()}
+        Generate EXACTLY 1 ${targetLang} word for a Wordle-like game.
+        The word length MUST be between 4 and 8 characters (inclusive).
+        IMPORTANT:
+        - Return a JSON object with a single key "word" containing the word as a string.
+        - No explanations.
+      `;
+      break;
+    case 'hangman':
+      system = `You are a language learning content generator for ${targetLang} learners. Return VALID JSON only.`;
+      user = `
+        SEED: ${seed ?? Date.now()}
+        Generate EXACTLY 1 ${targetLang} word for a Hangman game. The word should be of medium difficulty.
+        IMPORTANT:
+        - Return a JSON object with a single key "word" containing the word as a string.
+        - No explanations.
+      `;
+      break;
+    case 'crossword':
+      system = `You are a language learning content generator for language learning games. Return VALID JSON only.`;
+      user = `
+        SEED: ${seed ?? Date.now()}
+        Generate a small 5x5 crossword puzzle.
+        - All ANSWERS must be in the target language: ${targetLang}
+        - All CLUES must be written in the UI language: ${uiLang ?? 'en'}
+        Return a JSON object with the following structure:
+        {
+          "grid": Array<Array<string|null>> (5x5) with letters or null for black squares,
+          "clues": {
+            "across": { "1": { "clue": string, "answer": string, "row": number, "col": number }, ... },
+            "down": { "1": { "clue": string, "answer": string, "row": number, "col": number }, ... }
+          }
+        }
+        Ensure the answers fit into the grid and intersect correctly.
+        No explanations.
+      `;
+      break;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+    const completion = await openai.chat.completions.create(
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.5,
+      },
+      { signal: controller.signal },
+    );
+
+    clearTimeout(timeoutId);
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      console.error('OpenAI response content is null');
+      return null;
+    }
+
+    const data = JSON.parse(content);
+
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.words) {
+      return data.words;
+    } else if (data.word) {
+      return data.word;
+    } else if (data.grid && data.clues) {
+      return data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error generating ${gameType} content from OpenAI:`, error);
+    return null;
   }
 }
 

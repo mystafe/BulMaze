@@ -76,5 +76,10 @@
       "desc": "Comece um jogo instantaneamente sem login.",
       "start": "Jogar"
     }
-  }
+  },
+  "select_language": "Selecione o idioma",
+  "cancel": "Cancelar",
+  "start_game": "Começar o jogo",
+  "ui_language": "UI",
+  "target_language": "Alvo"
 }

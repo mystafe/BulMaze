@@ -1,5 +1,5 @@
 {
-  "loading": "Lädt...",
+  "loading": "Laden...",
   "hint": "Hinweis",
   "letter": "Buchstabe",
   "guessPlaceholder": "Dein Tipp",
@@ -7,5 +7,20 @@
   "points": "Punkte",
   "fetchError": "Wort konnte nicht geladen werden",
   "correct": "Richtig!",
-  "incorrect": "Falscher Tipp"
+  "incorrect": "Falsche Vermutung",
+  "quick_games": "Schnelle Spiele",
+  "quick": "Schnell",
+  "new_game": "Neues Spiel",
+  "pass": "Passen",
+  "scramble_title": "Wortsalat",
+  "wordle_title": "Wordle",
+  "hangman_title": "Galgenmännchen",
+  "crossword_title": "Kreuzworträtsel",
+  "check": "Prüfen",
+  "next": "Weiter",
+  "across": "Waagerecht",
+  "down": "Senkrecht",
+  "reveal_letter": "Buchstabe zeigen",
+  "reveal_word": "Wort zeigen",
+  "clear_word": "Wort löschen"
 }

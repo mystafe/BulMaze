@@ -76,5 +76,10 @@
       "desc": "Giriş yapmadan hemen oyun başlat.",
       "start": "Oyna"
     }
-  }
+  },
+  "select_language": "Dil Seçin",
+  "cancel": "İptal",
+  "start_game": "Oyuna Başla",
+  "ui_language": "Arayüz",
+  "target_language": "Hedef"
 }
