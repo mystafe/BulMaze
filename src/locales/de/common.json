@@ -81,5 +81,16 @@
   "cancel": "Abbrechen",
   "start_game": "Spiel starten",
   "ui_language": "UI",
-  "target_language": "Ziel"
+  "target_language": "Ziel",
+  "quick_label": "Schnell",
+  "sign_in_cta": "Zum Starten anmelden",
+  "sign_in": "Anmelden",
+  "sign_out": "Abmelden",
+  "try_demo": "Demo ausprobieren",
+  "welcome_back": "Willkommen zurück",
+  "demo_mode_on": "Demo-Modus aktiviert",
+  "admin_on": "Administratorrechte aktiviert",
+  "signed_out_demo": "Vom Demo-Modus abgemeldet",
+  "signed_out": "Erfolgreich abgemeldet",
+  "loading": "Laden..."
 }

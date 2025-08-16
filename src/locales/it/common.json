@@ -81,5 +81,16 @@
   "cancel": "Annulla",
   "start_game": "Inizia il gioco",
   "ui_language": "UI",
-  "target_language": "Obiettivo"
+  "target_language": "Obiettivo",
+  "quick_label": "Veloce",
+  "sign_in_cta": "Accedi per iniziare",
+  "sign_in": "Accedi",
+  "sign_out": "Disconnetti",
+  "try_demo": "Prova demo",
+  "welcome_back": "Bentornato",
+  "demo_mode_on": "Modalità demo attivata",
+  "admin_on": "Privilegi di amministratore attivati",
+  "signed_out_demo": "Uscito dalla modalità demo",
+  "signed_out": "Disconnessione avvenuta con successo",
+  "loading": "Caricamento..."
 }

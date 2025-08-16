@@ -81,5 +81,19 @@
   "cancel": "İptal",
   "start_game": "Oyuna Başla",
   "ui_language": "Arayüz",
-  "target_language": "Hedef"
+  "target_language": "Hedef",
+  "hero_subtitle": "İnteraktif kelime oyunları ve aralıklı tekrar ile İngilizce kelime bilginizi geliştirin.",
+  "cta_learn": "Öğrenmeye Başla",
+  "cta_quick": "Hızlı Oyunlar",
+  "quick_label": "Hızlı",
+  "sign_in_cta": "Başlamak için Giriş Yap",
+  "sign_in": "Giriş Yap",
+  "sign_out": "Çıkış Yap",
+  "try_demo": "Demoyu Dene",
+  "welcome_back": "Tekrar hoş geldin",
+  "demo_mode_on": "Demo Modu Etkin",
+  "admin_on": "Yönetici yetkileri etkin",
+  "signed_out_demo": "Demo modundan çıkıldı",
+  "signed_out": "Başarıyla çıkış yapıldı",
+  "loading": "Yükleniyor..."
 }

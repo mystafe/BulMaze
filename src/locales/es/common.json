@@ -81,5 +81,16 @@
   "cancel": "Cancelar",
   "start_game": "Empezar juego",
   "ui_language": "UI",
-  "target_language": "Objetivo"
+  "target_language": "Objetivo",
+  "quick_label": "Rápido",
+  "sign_in_cta": "Inicia sesión para empezar",
+  "sign_in": "Iniciar sesión",
+  "sign_out": "Cerrar sesión",
+  "try_demo": "Probar demo",
+  "welcome_back": "Bienvenido de nuevo",
+  "demo_mode_on": "Modo demo activado",
+  "admin_on": "Privilegios de administrador activados",
+  "signed_out_demo": "Cierre de sesión del modo demo",
+  "signed_out": "Cierre de sesión exitoso",
+  "loading": "Cargando..."
 }

@@ -85,5 +85,15 @@
   "hero_subtitle": "Master English vocabulary through interactive word games and spaced repetition learning.",
   "cta_learn": "Start Learning",
   "cta_quick": "Quick Games",
-  "quick_label": "Quick"
+  "quick_label": "Quick",
+  "sign_in_cta": "Sign In to Start",
+  "sign_in": "Sign In",
+  "sign_out": "Sign Out",
+  "try_demo": "Try Demo",
+  "welcome_back": "Welcome back",
+  "demo_mode_on": "Demo Mode Activated",
+  "admin_on": "Admin privileges activated",
+  "signed_out_demo": "Signed out of demo mode",
+  "signed_out": "Successfully signed out",
+  "loading": "Loading..."
 }

@@ -57,15 +57,8 @@ const CrosswordGame = () => {
       setDirection(initDir);
       setActiveClueId(initId);
       if (initId) {
-        const c = (data.clues as any)[initDir][initId] as Clue;
-        setFocus({ r: c.row, c: c.col });
-        // Ensure DOM focus after paint
-        setTimeout(() => {
-          const el = document.getElementById(
-            `cell-${c.row}-${c.col}`,
-          ) as HTMLInputElement | null;
-          el?.focus();
-        }, 0);
+        // Use selectClue to keep logic consistent and focus first cell
+        setTimeout(() => selectClue(initDir, initId), 0);
       }
     } else {
       console.error('Invalid crossword data from AI:', data);
@@ -246,9 +239,13 @@ const CrosswordGame = () => {
   };
 
   const revealLetter = () => {
+    // if no active, select first available
+    if (!activeClueId && clues) {
+      const first = Object.keys(clues[direction] || {})[0] || null;
+      if (first) selectClue(direction, first);
+    }
     if (!wordPath.length) return;
     const startIdx = focusIndexInWord >= 0 ? focusIndexInWord : 0;
-    // find first empty or incorrect cell starting from current focus index
     let targetIdx = -1;
     for (let i = startIdx; i < wordPath.length; i++) {
       const { r, c } = wordPath[i];
@@ -260,7 +257,6 @@ const CrosswordGame = () => {
       }
     }
     if (targetIdx === -1) {
-      // try from beginning if all after focus are correct
       for (let i = 0; i < startIdx; i++) {
         const { r, c } = wordPath[i];
         const expected = (solutionGrid[r]?.[c] || '').toUpperCase();
@@ -277,7 +273,6 @@ const CrosswordGame = () => {
       next[r][c] = (solutionGrid[r]?.[c] || '').toUpperCase();
       setGrid(next);
       setFocus({ r, c });
-      // advance to next cell after revealing
       setTimeout(
         () => setFocusByIndex(Math.min(targetIdx + 1, wordPath.length - 1)),
         0,
@@ -329,7 +324,8 @@ const CrosswordGame = () => {
         </button>
         <button
           onClick={checkWord}
-          className="px-3 py-2 bg-emerald-600 text-white rounded"
+          disabled={!activeClueId}
+          className="px-3 py-2 bg-emerald-600 text-white rounded disabled:opacity-50"
         >
           {t('check')}
         </button>
@@ -343,19 +339,22 @@ const CrosswordGame = () => {
         </button>
         <button
           onClick={revealLetter}
-          className="px-3 py-2 bg-purple-600 text-white rounded"
+          disabled={!activeClueId}
+          className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-50"
         >
           {t('reveal_letter', { defaultValue: 'Reveal letter' })}
         </button>
         <button
           onClick={revealWord}
-          className="px-3 py-2 bg-purple-700 text-white rounded"
+          disabled={!activeClueId}
+          className="px-3 py-2 bg-purple-700 text-white rounded disabled:opacity-50"
         >
           {t('reveal_word', { defaultValue: 'Reveal word' })}
         </button>
         <button
           onClick={clearWord}
-          className="px-3 py-2 bg-amber-600 text-white rounded"
+          disabled={!activeClueId}
+          className="px-3 py-2 bg-amber-600 text-white rounded disabled:opacity-50"
         >
           {t('clear_word', { defaultValue: 'Clear word' })}
         </button>
@@ -363,6 +362,17 @@ const CrosswordGame = () => {
           <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
             {direction.toUpperCase()} {activeClueId}:{' '}
             {clues?.[direction]?.[activeClueId!]?.clue}
+          </span>
+        )}
+        {wordPath.length > 0 && (
+          <span className="ml-2 text-xs text-gray-500">
+            (
+            {wordPath
+              .map(({ r, c }) =>
+                grid[r]?.[c] ? (grid[r]![c] as string).toUpperCase() : '_',
+              )
+              .join('')}
+            , {wordPath.length})
           </span>
         )}
       </div>
@@ -385,7 +395,26 @@ const CrosswordGame = () => {
               return (
                 <div
                   key={`${r}-${c}`}
-                  className={`w-8 h-8 border border-gray-400 relative ${isActive ? 'bg-yellow-100 dark:bg-yellow-800' : ''} ${isBlock ? 'bg-gray-400 dark:bg-gray-800' : ''}`}
+                  className={`w-8 h-8 border border-gray-400 relative ${isActive ? 'bg-yellow-100 dark:bg-yellow-800' : ''} ${isBlock ? 'bg-gray-400 dark:bg-gray-800 pointer-events-none cursor-not-allowed' : ''}`}
+                  onClick={() => {
+                    if (isBlock) return;
+                    if (!isActive) {
+                      const preferred =
+                        idAtCell(direction, r, c) ||
+                        idAtCell(
+                          direction === 'across' ? 'down' : 'across',
+                          r,
+                          c,
+                        );
+                      if (preferred)
+                        selectClue(
+                          preferred === idAtCell('across', r, c)
+                            ? 'across'
+                            : 'down',
+                          preferred,
+                        );
+                    }
+                  }}
                 >
                   {clueNumber && !isBlock && (
                     <span className="absolute top-0 left-1 text-[10px] leading-none">
@@ -414,7 +443,8 @@ const CrosswordGame = () => {
                           setActiveClueId(found);
                         }
                       }}
-                      className={`w-full h-full text-center bg-transparent outline-none ${focused ? 'ring-2 ring-blue-400' : ''}`}
+                      disabled={!isActive}
+                      className={`w-full h-full text-center bg-transparent outline-none ${focused ? 'ring-2 ring-blue-400' : ''} ${!isActive ? 'cursor-pointer' : ''}`}
                     />
                   )}
                 </div>

@@ -6,9 +6,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useSession } from 'next-auth/react';
 
 export default function HomeLanding() {
   const { t } = useTranslation('common');
+  const { data: session } = useSession();
+  const primaryHref = session ? '/trainer' : '/auth/signin';
+  const primaryLabel = session
+    ? t('cta_learn', { defaultValue: 'Start Learning' })
+    : t('sign_in_cta', { defaultValue: 'Sign In to Start' });
   return (
     <section className="flex flex-col items-center justify-center min-h-[70vh] text-center">
       <motion.div
@@ -44,10 +50,10 @@ export default function HomeLanding() {
           className="mt-10 flex flex-wrap gap-4 justify-center"
         >
           <Link
-            href="/trainer"
+            href={primaryHref}
             className="px-6 py-3 rounded-lg shadow-lg bg-[var(--bm-primary)] hover:bg-teal-700 text-white flex items-center gap-2"
           >
-            {t('cta_learn', { defaultValue: 'Start Learning' })}
+            {primaryLabel}
           </Link>
           <Link
             href="/quick"

@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useUiStore } from '@/lib/store';
 import { isAdminUser } from '@/lib/adminUsers';
+import { useTranslation } from 'react-i18next';
 
 interface DemoUser {
   name: string;
@@ -15,6 +16,7 @@ interface DemoUser {
 }
 
 export default function AuthButtons() {
+  const { t } = useTranslation('common');
   const { data: session, status } = useSession();
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoUser, setDemoUser] = useState<DemoUser | null>(null);
@@ -28,12 +30,14 @@ export default function AuthButtons() {
   useEffect(() => {
     // Check for login
     if (prevStatus.current === 'loading' && status === 'authenticated') {
-      toast.success(`Welcome back, ${session?.user?.name || 'User'}!`);
+      toast.success(
+        `${t('welcome_back', { defaultValue: 'Welcome back' })}, ${session?.user?.name || 'User'}!`,
+      );
     }
 
     // Check for demo mode login
     if (!demoUser && isDemoMode) {
-      toast.success('Demo Mode Activated');
+      toast.success(t('demo_mode_on', { defaultValue: 'Demo Mode Activated' }));
     }
 
     // Check admin status
@@ -42,12 +46,14 @@ export default function AuthButtons() {
       const adminStatus = isAdminUser(currentUser.email);
       setIsAdmin(adminStatus);
       if (adminStatus) {
-        toast.success('Admin privileges activated');
+        toast.success(
+          t('admin_on', { defaultValue: 'Admin privileges activated' }),
+        );
       }
     }
 
     prevStatus.current = status;
-  }, [status, session, isDemoMode, demoUser, setIsAdmin]);
+  }, [status, session, isDemoMode, demoUser, setIsAdmin, t]);
 
   // Check if Google OAuth is properly configured on mount
   useEffect(() => {
@@ -72,12 +78,12 @@ export default function AuthButtons() {
       setDemoUser({
         name: 'Demo User',
         email: 'demo@wordmaster.com',
-        image: null, // Use local avatar instead
+        image: null,
       });
     } else {
-      // Use current window location as callback URL
       const callbackUrl = window.location.origin;
-      signIn('google', { callbackUrl });
+      // Force account chooser to avoid auto-signing into the last Google account
+      signIn('google', { callbackUrl, prompt: 'select_account' } as any);
     }
   };
 
@@ -85,10 +91,14 @@ export default function AuthButtons() {
     if (isDemoMode) {
       setDemoUser(null);
       setIsDemoMode(false);
-      toast.success('Signed out of demo mode');
+      toast.success(
+        t('signed_out_demo', { defaultValue: 'Signed out of demo mode' }),
+      );
     } else {
       await signOut({ redirect: false });
-      toast.success('Successfully signed out');
+      toast.success(
+        t('signed_out', { defaultValue: 'Successfully signed out' }),
+      );
     }
   };
 
@@ -96,12 +106,13 @@ export default function AuthButtons() {
     return (
       <div className="flex items-center gap-2">
         <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-        <span className="text-sm text-gray-600">Loading...</span>
+        <span className="text-sm text-gray-600">
+          {t('loading', { defaultValue: 'Loading...' })}
+        </span>
       </div>
     );
   }
 
-  // Use demo user if in demo mode, otherwise use session
   const currentUser = isDemoMode ? demoUser : session?.user;
 
   if (currentUser) {
@@ -116,7 +127,6 @@ export default function AuthButtons() {
             className="rounded-full"
           />
         ) : (
-          // Local avatar for demo mode
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
             {currentUser.name?.charAt(0) || 'D'}
           </div>
@@ -128,7 +138,7 @@ export default function AuthButtons() {
           )}
         </span>
         <Button onClick={handleSignOut} variant="outline" size="sm">
-          Sign Out
+          {t('sign_out', { defaultValue: 'Sign Out' })}
         </Button>
       </div>
     );
@@ -136,7 +146,9 @@ export default function AuthButtons() {
 
   return (
     <Button onClick={handleSignIn} size="sm">
-      {hasGoogleAuth ? 'Sign In' : 'Try Demo'}
+      {hasGoogleAuth
+        ? t('sign_in', { defaultValue: 'Sign In' })
+        : t('try_demo', { defaultValue: 'Try Demo' })}
     </Button>
   );
 }

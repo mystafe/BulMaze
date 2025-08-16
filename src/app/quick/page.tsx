@@ -7,10 +7,10 @@ import LanguageModal from '@/components/LanguageModal';
 import { useRouter } from 'next/navigation';
 
 const games = [
-  { id: 'word-scramble', name: 'Word Scramble' },
-  { id: 'wordle', name: 'Wordle' },
-  { id: 'hangman', name: 'Hangman' },
-  { id: 'crossword', name: 'Crossword' },
+  { id: 'word-scramble', labelKey: 'scramble_title' },
+  { id: 'wordle', labelKey: 'wordle_title' },
+  { id: 'hangman', labelKey: 'hangman_title' },
+  { id: 'crossword', labelKey: 'crossword_title' },
 ];
 
 export default function QuickGamesPage() {
@@ -65,7 +65,9 @@ export default function QuickGamesPage() {
               onClick={() => handleGameClick(game.id)}
               className="block p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <h2 className="text-2xl font-semibold">{game.name}</h2>
+              <h2 className="text-2xl font-semibold">
+                {t(game.labelKey as any)}
+              </h2>
             </a>
           </motion.div>
         ))}
